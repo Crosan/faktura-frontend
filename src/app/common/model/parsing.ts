@@ -10,11 +10,11 @@ import { Type } from 'class-transformer';
 export class Parsing {
 
     id: number;
-
     data_fil: File
     mangel_liste_fil: any
     oprettet: Date
-    oprettet_af: Profile
+    oprettet_af: Profile // Dette er ikke i Django-db'en
+    sent: Boolean
 
     @Type(() => Faktura)
     fakturaer: Faktura[]

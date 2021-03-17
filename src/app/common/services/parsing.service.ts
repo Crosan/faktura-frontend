@@ -7,6 +7,7 @@ import { DataService } from './data.service';
 import { HttpClient } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 import { Parsing } from '../model/parsing';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -20,4 +21,5 @@ export class ParsingService extends DataService<Parsing> {
   handleResponse(data: any) {
     return plainToClass(Parsing, data);
   }
+
 }

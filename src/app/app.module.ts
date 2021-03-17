@@ -48,6 +48,7 @@ import { FakturaPdfComponent } from './common/component/faktura-pdf/faktura-pdf.
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './common/services/guards/auth-guard.service';
 import { SendService } from './common/services/send.service';
+import { ParsingComponent } from './parsing/parsing.component';
 
 registerLocaleData(localeDA);
 
@@ -65,6 +66,11 @@ const routes: Routes = [
   {
     path: 'no-access',
     component: NoAccessComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'parses',
+    component: ParsingComponent,
     canActivate: [AuthGuard]
   },
   {
@@ -87,7 +93,8 @@ const routes: Routes = [
     LoginComponent,
     HomeComponent,
     PriceComponent,
-    FakturaPdfComponent
+    FakturaPdfComponent,
+    ParsingComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="row">
+
+    <div class="col-md-3 left">
+
+  <h5 style="margin-top:1rem" class="card-title">Alle kørsler:</h5>
+<ul class="allParses">
+  <li *ngFor="let parsing of allParses" (click)="onSelect(parsing)">
+    {{ parsing.oprettet }} - ({{ parsing.fakturaer.length }} fakturaer)
+  </li>
+</ul>
+</div>
+<div class="col-md-9 center">
+<h5 style="margin-top:1rem" class="card-title">Fakturaer i kørsel nr. {{ selectedParsing.id }}:</h5>
+
+<!-- {{selectedParsing.fakturaer}} -->
+
+<ul class="selectedFakturaer">
+  <li *ngFor="let faktura of selectedFakturaer">
+    {{ faktura.rekvirent.hospital }} - {{ faktura.samlet_pris }}
+  </li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- 
+id: number;
+data_fil: File
+mangel_liste_fil: any
+oprettet: Date
+oprettet_af: Profile 
+sent: Boolean 
+-->

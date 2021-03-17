@@ -11,6 +11,11 @@
             <b><a [ngClass]="router.url === '/priser' ? 'nav-link selected': 'nav-link'"
               routerLink="/priser">Priser</a></b>
         </li>
+        <!-- RS -->
+        <li class="nav-item">
+          <b><a [ngClass]="router.url === '/parses' ? 'nav-link selected': 'nav-link'"
+            routerLink="/parses">Kørsler</a></b>
+        </li>
         <li class="nav-item">
           <button class="btn" (click)="authService.logout()">log ud</button>
         </li>
