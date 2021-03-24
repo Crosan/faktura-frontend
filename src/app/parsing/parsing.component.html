@@ -1,34 +1,47 @@
 <div class="container">
   <div class="row">
+    Status:
+    <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
+      class="form-control-sm table-item-width center" #selectedStatus="ngModel" (change)=onSelect()>
+      <option *ngFor="let status of statuses" [value]="status"> {{status}} </option>
+    </select>
+  </div>
+  <div class="row">
+    <div class="col-sm">
+      <h5 style="margin-top:1rem" class="card-title">Alle kørsler:</h5>
+      <ul class="allParses">
+        <li *ngFor="let parsing of allParses" (click)="onSelect(parsing)">
+          <!-- {{ parsing.data_fil.slice(35, -22) }} - ({{ parsing.fakturaer.length }} fakturaer) -->
+          {{ parsing.filename }} - ({{ parsing.fakturaer.length }} fakturaer)
+        </li>
+      </ul>
 
-    <div class="col-md-3 left">
+      <!-- <select [(ngModel)]="allParses" name="selectedParsing" id="selectedParsing"
+        class="form-control-sm table-item-width center" #selectedParsing="ngModel" (change)=onSelect()>
+        <option *ngFor="let parsing of allParses" [value]="parse"> {{ parsing.data_fil.slice(35, -22) }} - ({{ parsing.fakturaer.length }} fakturaer) </option>
+      </select> -->
+    </div>
 
-  <h5 style="margin-top:1rem" class="card-title">Alle kørsler:</h5>
-<ul class="allParses">
-  <li *ngFor="let parsing of allParses" (click)="onSelect(parsing)">
-    {{ parsing.oprettet }} - ({{ parsing.fakturaer.length }} fakturaer)
-  </li>
-</ul>
+    <div class="col-sm">
+      <h5 style="margin-top:1rem" class="card-title">{{ selectedParsing.data_fil.slice(35, -22) }}</h5>
+
+      <ul class="selectedFakturaer">
+        <li *ngFor="let faktura of selectedFakturaer" (click)="onSelectF(faktura)">
+          {{ faktura.rekvirent.hospital }}, {{ faktura.rekvirent.afdelingsnavn }} - {{ faktura.analyser.length }}
+          analyser
+        </li>
+      </ul>
+    </div>
+
+
+    <div class="col-sm">
+      <h5 style="margin-top:1rem" class="card-title">{{ selectedFaktura.rekvirent.hospital }}, {{
+        selectedFaktura.rekvirent.afdelingsnavn }}</h5>
+      <ul class="selectedAnalyser">
+        <li *ngFor="let analyse of selectedAnalyser">
+          {{ analyse.analyse_type.ydelses_navn }}
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
-<div class="col-md-9 center">
-<h5 style="margin-top:1rem" class="card-title">Fakturaer i kørsel nr. {{ selectedParsing.id }}:</h5>
-
-<!-- {{selectedParsing.fakturaer}} -->
-
-<ul class="selectedFakturaer">
-  <li *ngFor="let faktura of selectedFakturaer">
-    {{ faktura.rekvirent.hospital }} - {{ faktura.samlet_pris }}
-  </li>
-</ul>
-</div>
-</div>
-</div>
-
-<!-- 
-id: number;
-data_fil: File
-mangel_liste_fil: any
-oprettet: Date
-oprettet_af: Profile 
-sent: Boolean 
--->

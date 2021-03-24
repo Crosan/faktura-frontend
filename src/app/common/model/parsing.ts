@@ -15,6 +15,7 @@ export class Parsing {
     oprettet: Date
     oprettet_af: Profile // Dette er ikke i Django-db'en
     sent: Boolean
+    // filename: string
 
     @Type(() => Faktura)
     fakturaer: Faktura[]
@@ -38,4 +39,14 @@ export class Parsing {
 
         return return_obj
     }
+
+    get filename() {
+        // return this.data_fil.slice(35, -22)
+        // return this.data_fil.name.replace(/^.*[\\\/]/, '')
+
+        // Filenames are: actual/file/path.xlsx_-_YYYYMMDDHHSS.xlsx
+        // charsAtEnd = -22;
+        return this.data_fil.slice(this.data_fil.lastIndexOf("/")+1, -22)
+    }
+
 }

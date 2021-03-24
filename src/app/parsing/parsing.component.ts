@@ -7,6 +7,8 @@ import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ParseOptions } from 'querystring';
 import { Faktura } from '../common/model/faktura';
+import { Analyse } from '../common/model/analyse';
+import { NONE_TYPE } from '@angular/compiler/src/output/output_ast';
 
 @Component({
   selector: 'app-parsing',
@@ -19,26 +21,37 @@ export class ParsingComponent implements OnInit {
     private parsingService: ParsingService) { }
 
   ngOnInit() {
-    console.log("logbesked");
     this.getParses();
-    this.testParse = this.allParses[3]
-    // console.log("test")
+    // this.selectedParsing = this.allParses[0]
   }
 
+  statuses: number[] = [10, 20, 30];
+  status: number = 10;
 
   allParses: Parsing[];
 
-  testParse: Parsing;
-
   selectedFakturaer: Faktura[];
+  selectedAnalyser: Analyse[];
 
   getParses(): void {
     this.parsingService.getAll(true).subscribe(allParses => this.allParses = allParses)
   }
 
   selectedParsing?: Parsing;
-  onSelect(parsing: Parsing): void {
+  onSelect(parsing: Parsing = this.selectedParsing): void {
     this.selectedParsing = parsing;
-    this.selectedFakturaer = parsing.fakturaer
+    this.selectedFakturaer = parsing.fakturaer.filter((x: Faktura): boolean => { return x.status == (this.status as number); })
+    // delete this.selectedFaktura;
+    // delete this.selectedAnalyser
+    this.selectedFaktura = undefined;
+    this.selectedAnalyser = [] //!!!!!!
+  }
+  selectedFaktura?: Faktura;
+  onSelectF(faktura: Faktura): void {
+    this.selectedFaktura = faktura;
+    this.selectedAnalyser = faktura.analyser
+
+  }
 }
-}
+
+(x: Faktura): boolean => { return x.status == 10; }
