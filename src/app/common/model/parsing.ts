@@ -10,10 +10,10 @@ import { Type } from 'class-transformer';
 export class Parsing {
 
     id: number;
-    data_fil: File
+    data_fil: string
     mangel_liste_fil: any
     oprettet: Date
-    oprettet_af: Profile // Dette er ikke i Django-db'en
+    // oprettet_af: Profile // Dette er ikke i Django-db'en
     sent: Boolean
     // filename: string
 
@@ -27,7 +27,7 @@ export class Parsing {
             data_fil: this.data_fil,
             mangel_liste_fil: this.mangel_liste_fil,
             oprettet: this.oprettet,
-            oprettet_af: this.oprettet_af.id,
+            // oprettet_af: this.oprettet_af.id,
             fakturaer: []
         }
 
@@ -47,7 +47,7 @@ export class Parsing {
 
         // Filenames are: actual/file/path.xlsx_-_YYYYMMDDHHSS.xlsx
         // charsAtEnd = -22;
-        return this.data_fil.slice(this.data_fil.name.lastIndexOf("/")+1, -22)
+        return this.data_fil.slice(this.data_fil.lastIndexOf("/")+1, -22)
     }
 
 }
