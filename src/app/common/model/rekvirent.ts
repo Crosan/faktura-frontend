@@ -1,5 +1,6 @@
 import { AnalyseType } from './analyse-type';
 import { Faktura } from './faktura';
+import { Betalergruppe } from './betalergruppe'
 
 /**
  * @module Model
@@ -13,6 +14,7 @@ export class Rekvirent {
     niveau: string
     afdelingsnavn: string
     GLN_nummer: string
+    betalergruppe: Betalergruppe
 
     fakturaer: Faktura[]
 
@@ -24,6 +26,7 @@ export class Rekvirent {
             niveau: this.niveau,
             afdelingsnavn: this.afdelingsnavn,
             GLN_nummer: this.GLN_nummer,
+            betalergruppe: this.betalergruppe,
             fakturaer: []
         }
 

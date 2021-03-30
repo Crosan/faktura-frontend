@@ -1,47 +1,136 @@
+<!-- <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
+  <p style="font-size: 20px; color: white">{{spinnerText}}</p>
+</ngx-spinner> -->
+
 <div class="container">
   <div class="row">
-    Status:
-    <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
-      class="form-control-sm table-item-width center" #selectedStatus="ngModel" (change)=onSelect()>
-      <option *ngFor="let status of statuses" [value]="status"> {{status}} </option>
+    View: 
+    <select [(ngModel)]="view" name="selectedView" id="selectedView"
+      class="form-control-sm table-item-width center" #selectedview="ngModel" (change)=onSelect()>
+      <option *ngFor="let view of views" [value]="view"> {{view}} </option>
     </select>
+    {{ testtext }}
   </div>
-  <div class="row">
-    <div class="col-sm">
-      <h5 style="margin-top:1rem" class="card-title">Alle kørsler:</h5>
-      <ul class="allParses">
-        <li *ngFor="let parsing of allParses" (click)="onSelect(parsing)">
-          <!-- {{ parsing.data_fil.slice(35, -22) }} - ({{ parsing.fakturaer.length }} fakturaer) -->
-          {{ parsing.filename }} - ({{ parsing.fakturaer.length }} fakturaer)
-        </li>
-      </ul>
 
-      <!-- <select [(ngModel)]="allParses" name="selectedParsing" id="selectedParsing"
-        class="form-control-sm table-item-width center" #selectedParsing="ngModel" (change)=onSelect()>
-        <option *ngFor="let parsing of allParses" [value]="parse"> {{ parsing.data_fil.slice(35, -22) }} - ({{ parsing.fakturaer.length }} fakturaer) </option>
-      </select> -->
+  <div class="center container" *ngIf="view == 'faktsInParse' || view == 'betGrpInParse'">
+    <div class="row">
+      <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
     </div>
+</div>
 
-    <div class="col-sm">
-      <h5 style="margin-top:1rem" class="card-title">{{ selectedParsing.data_fil.slice(35, -22) }}</h5>
-
-      <ul class="selectedFakturaer">
-        <li *ngFor="let faktura of selectedFakturaer" (click)="onSelectF(faktura)">
-          {{ faktura.rekvirent.hospital }}, {{ faktura.rekvirent.afdelingsnavn }} - {{ faktura.analyser.length }}
-          analyser
-        </li>
-      </ul>
-    </div>
-
-
-    <div class="col-sm">
-      <h5 style="margin-top:1rem" class="card-title">{{ selectedFaktura.rekvirent.hospital }}, {{
-        selectedFaktura.rekvirent.afdelingsnavn }}</h5>
-      <ul class="selectedAnalyser">
-        <li *ngFor="let analyse of selectedAnalyser">
-          {{ analyse.analyse_type.ydelses_navn }}
-        </li>
-      </ul>
+  <!-- Initial view, all parses -->
+  <div class="center container" *ngIf="view=='parses'">
+    <div class="row">
+      <div class="list-group col-md-10 offset-md-1">
+        <div class="row align-items-center justify-content-center">
+          <div class="card list-width">
+            <div class="card-header text-white bg-info">
+              <div class="card-header-top w-100 justify-content-between center">
+                <h3 class="mb-1">Alle indlæste faktura-filer:</h3>
+              </div>
+            </div>
+  
+            <div class="card-body">
+  
+              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
+                priser</button> -->
+  
+              <ul class="list-group">
+                <div *ngFor="let parse of allParses; let i = index">
+                  <li class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem">Filnavn:
+                        {{ parse.filename }}</label>
+                      <label style="margin-bottom:0px; margin-top:0.2rem">Uploadet:
+                        {{ parse.oprettet | date }}</label>
+                    </div>
+                    <div class="d-flex w-100 justify-content-between">
+                      <button type="button" class="btn" (click)="noop()">Betalergrupper</button>
+                      <button type="button" class="btn" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
+                      <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button>
+                      <button type="button" class="btn btn-danger" (click)="noop()">Fjern</button>
+                    </div>
+                  </li>
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Alle fakturaer i ét parse -->
+  <div class="center container" *ngIf="view=='faktsInParse'">
+    <!-- <div class="row">
+      <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
+    </div> -->
+    <div class="row">
+      <div class="list-group col-md-10 offset-md-1">
+        <div class="row align-items-center justify-content-center">
+          <div class="card list-width">
+            <div class="card-header text-white bg-info">
+              <div class="card-header-top w-100 justify-content-between center">
+                <h3 class="mb-1">{{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
+              </div>
+            </div>
+  
+            <div class="card-body">
+  
+              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
+                priser</button> -->
+  
+              <ul class="list-group">
+                <div *ngFor="let faktura of selectedParsing.fakturaer; let i = index">
+                  <li class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
+                        {{ faktura.rekvirent.hospital }} - {{ faktura.rekvirent.afdelingsnavn }}
+                      </label>
+                      <label style="margin-bottom:0px; margin-top:0.2rem">
+                        {{ faktura.analyser.length }} analyser
+                      </label>
+                    </div>
+                    <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Betalergruppe:
+                        {{ faktura.rekvirent.betalergruppe }} - {{ faktura.rekvirent.afdelingsnavn }}
+                      </label>
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
+                        {{ faktura.samlet_pris }} kr.
+                      </label>
+                    </div>
+                    <div class="d-flex w-100 justify-left">
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
+                        {{ faktura.status }}
+                      </label>
+                    </div>
+                    <!-- <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem">Ekstern pris:
+                        {{pris.ekstern_pris}}</label>
+                      <label style="margin-bottom:0px; margin-top:0.2rem">Gyldig til:
+                        {{pris.gyldig_til | date}}</label>
+                    </div> -->
+                    <!-- <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem">Analysetype:
+                        {{pris.analyse_type.ydelses_kode}}</label>
+                    </div> -->
+                    <div class="d-flex w-100 justify-content-between">
+                      <!-- <label *ngIf="pris.duplikat"
+                        style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
+                      <label *ngIf="!pris.duplikat"></label> -->
+                      <button type="button" class="btn btn-success" (click)="noop()">Send</button>
+                      <button type="button" class="btn btn-danger" (click)="noop()">Slet</button>
+                    </div>
+                  </li>
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+
 </div>
