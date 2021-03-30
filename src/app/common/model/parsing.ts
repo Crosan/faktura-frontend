@@ -40,13 +40,14 @@ export class Parsing {
         return return_obj
     }
 
+    // TODO: Få til at virke...
     get filename() {
         // return this.data_fil.slice(35, -22)
         // return this.data_fil.name.replace(/^.*[\\\/]/, '')
 
         // Filenames are: actual/file/path.xlsx_-_YYYYMMDDHHSS.xlsx
         // charsAtEnd = -22;
-        return this.data_fil.slice(this.data_fil.lastIndexOf("/")+1, -22)
+        return this.data_fil.slice(this.data_fil.name.lastIndexOf("/")+1, -22)
     }
 
 }

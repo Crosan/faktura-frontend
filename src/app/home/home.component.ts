@@ -21,7 +21,7 @@ export class HomeComponent {
     positionClass: 'toast-top-right'
   });
 
-  @ViewChild('fileInput')
+  @ViewChild('fileInput', { static: true })
   fileInput: ElementRef;
 
   @ViewChild('presentation') presentation: FakturaPdfComponent;

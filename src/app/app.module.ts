@@ -117,7 +117,7 @@ const routes: Routes = [
     MaterialFileInputModule,
     HttpClientModule,
     NgxSpinnerModule,
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })
   ],
   providers: [
     { provide: LOCALE_ID, useValue: "da" },

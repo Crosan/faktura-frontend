@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FakturaPdfComponent } from './faktura-pdf.component';
 
@@ -6,7 +6,7 @@ describe('FakturaPdfComponent', () => {
   let component: FakturaPdfComponent;
   let fixture: ComponentFixture<FakturaPdfComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ FakturaPdfComponent ]
     })

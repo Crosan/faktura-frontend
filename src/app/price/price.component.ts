@@ -18,7 +18,7 @@ import { DownloadService } from '../common/services/download.service';
 })
 export class PriceComponent implements OnInit {
 
-  @ViewChild('fileInput')
+  @ViewChild('fileInput', { static: true })
   fileInput: ElementRef;
 
   priser: AnalysePris[] = []
