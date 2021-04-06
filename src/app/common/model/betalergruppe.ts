@@ -10,6 +10,7 @@ export class Betalergruppe {
 
     navn: string
     oprettet: Date
+    bgtype: string
     
     rekvirenter: Rekvirent[]
 
@@ -20,10 +21,10 @@ export class Betalergruppe {
             id: this.id,
             navn: this.navn,
             oprettet: this.oprettet,
+            bgtype: this.bgtype,
             rekvirenter: []
         }
 
-        // Kan vi gøre noget smartere end det her?
         if (this.rekvirenter) {
             for (let rekvirent of this.rekvirenter) {
                 return_obj.rekvirenter.push(rekvirent.id)

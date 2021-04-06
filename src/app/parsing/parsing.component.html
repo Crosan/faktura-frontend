@@ -4,40 +4,74 @@
 
 <div class="container">
   <div class="row">
-    View: 
-    <select [(ngModel)]="view" name="selectedView" id="selectedView"
-      class="form-control-sm table-item-width center" #selectedview="ngModel" (change)=onSelect()>
+    View:
+    <select [(ngModel)]="view" name="selectedView" id="selectedView" class="form-control-sm table-item-width center"
+      #selectedview="ngModel" (change)=onSelect()>
       <option *ngFor="let view of views" [value]="view"> {{view}} </option>
     </select>
     {{ testtext }}
+    <button type="button" class="btn" (click)="noop()">Test</button>
+
   </div>
+
 
   <div class="center container" *ngIf="view == 'faktsInParse' || view == 'betGrpInParse'">
     <div class="row">
       <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
     </div>
-</div>
+  </div>
 
   <!-- Initial view, all parses -->
   <div class="center container" *ngIf="view=='parses'">
+
     <div class="row">
       <div class="list-group col-md-10 offset-md-1">
         <div class="row align-items-center justify-content-center">
           <div class="card list-width">
             <div class="card-header text-white bg-info">
               <div class="card-header-top w-100 justify-content-between center">
-                <h3 class="mb-1">Alle indlæste faktura-filer:</h3>
+                <h3 class="mb-1">Alle indlæste faktura-filer</h3>
+              </div>
+              <div>
+                <input placeholder="Søg efter fakturafil" aria-label="Parsing" class="form-control py-2 search-input"
+                  name="parsing" />
+                <!-- [formControl]="analyseControl" -->
+              </div>
+              <div class="d-flex w-100 justify-content-between">
+                <!-- <mat-date-range-input [rangePicker]="picker">
+                  <input matStartDate placeholder="Start date"><br>
+                  <input matEndDate placeholder="End date">
+                </mat-date-range-input>
+                
+                <mat-date-range-picker #picker></mat-date-range-picker> -->
+                <select [(ngModel)]="parseTypeToShow" name="parseTypeToShow" id="parseTypeToShow"
+                  class="form-control-sm table-item-width center" #selectedview="ngModel">
+                  <option *ngFor="let parsetype of parsetypes" [value]="parsetype"> {{parsetype}} </option>
+                </select>
+
+                <div>
+                <input [(ngModel)]="startDate" matInput [matDatepicker]="pickerStart" placeholder="Fra"
+                  (change)="noop()">
+                <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                <mat-datepicker #pickerStart></mat-datepicker>
+              </div>
+              <div>
+                <input [(ngModel)]="enddate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
+                <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                <mat-datepicker #pickerEnd></mat-datepicker>
+              </div>
               </div>
             </div>
-  
+
+
             <div class="card-body">
-  
+
               <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
                 priser</button> -->
-  
+
               <ul class="list-group">
                 <div *ngFor="let parse of allParses; let i = index">
-                  <li class="list-group-item">
+                  <li class="list-group-item" *ngIf="parseSatisfiesSearch(parse)">
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem">Filnavn:
                         {{ parse.filename }}</label>
@@ -45,10 +79,10 @@
                         {{ parse.oprettet | date }}</label>
                     </div>
                     <div class="d-flex w-100 justify-content-between">
-                      <button type="button" class="btn" (click)="noop()">Betalergrupper</button>
+                      <!-- <button type="button" class="btn" (click)="noop()">Betalergrupper</button> -->
                       <button type="button" class="btn" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
                       <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button>
-                      <button type="button" class="btn btn-danger" (click)="noop()">Fjern</button>
+                      <button type="button" class="btn btn-danger" (click)="noop(parse.id)">Fjern</button>
                     </div>
                   </li>
                 </div>
@@ -74,26 +108,37 @@
                 <h3 class="mb-1">{{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
               </div>
             </div>
-  
+            <!-- <div class="card-header text-white bg-info">
+              Sortér efter:
+              <div class="d-flex w-100 justify-content-between left">
+                
+                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Pris</button>
+                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Status</button>
+                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Betalergruppe</button>
+              </div>
+            </div> -->
+
             <div class="card-body">
-  
+
               <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
                 priser</button> -->
-  
+
               <ul class="list-group">
                 <div *ngFor="let faktura of selectedParsing.fakturaer; let i = index">
                   <li class="list-group-item">
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
-                        {{ faktura.rekvirent.hospital }} - {{ faktura.rekvirent.afdelingsnavn }}
+                        {{ faktura.rekvirent.afdelingsnavn }}
                       </label>
-                      <label style="margin-bottom:0px; margin-top:0.2rem">
+                      <!-- <label style="margin-bottom:0px; margin-top:0.2rem">
                         {{ faktura.analyser.length }} analyser
-                      </label>
+                      </label> -->
                     </div>
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Betalergruppe:
-                        {{ faktura.rekvirent.betalergruppe }} - {{ faktura.rekvirent.afdelingsnavn }}
+                        <div *ngIf="faktura.rekvirent.betalergruppe" style="display:inline">
+                          {{ faktura.rekvirent.betalergruppe.navn }} ({{ faktura.rekvirent.betalergruppe.bgtype }})
+                        </div>
                       </label>
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
                         {{ faktura.samlet_pris }} kr.
@@ -118,8 +163,9 @@
                       <!-- <label *ngIf="pris.duplikat"
                         style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
                       <label *ngIf="!pris.duplikat"></label> -->
-                      <button type="button" class="btn btn-success" (click)="noop()">Send</button>
-                      <button type="button" class="btn btn-danger" (click)="noop()">Slet</button>
+                      <button type="button" class="btn btn-success" (click)="writeIDOfFakt(faktura)">Send</button>
+                      <button type="button" class="btn btn-danger"
+                        (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button>
                     </div>
                   </li>
                 </div>
@@ -130,7 +176,7 @@
       </div>
     </div>
   </div>
-  
+
 
 
 </div>
