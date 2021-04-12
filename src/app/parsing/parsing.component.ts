@@ -98,8 +98,6 @@ export class ParsingComponent implements OnInit {
     var isInBetalergruppe = rekv.betalergruppe && rekv.betalergruppe.navn.toLowerCase().includes(term);
     var isInEAN = String(rekv.GLN_nummer).includes(this.fakturaSearchTerm);
     var hasCorrectStatus = (this.status == 0) || (this.status == faktura.status);
-    console.log(hasCorrectStatus);
-    // var statcheck = faktura.status.
     return (isInRekvirent || isInBetalergruppe || isInEAN) && hasCorrectStatus
   }
 

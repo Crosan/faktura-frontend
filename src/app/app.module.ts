@@ -49,6 +49,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './common/services/guards/auth-guard.service';
 import { SendService } from './common/services/send.service';
 import { ParsingComponent } from './parsing/parsing.component';
+import { RekvirentComponent } from './rekvirenter/rekvirenter.component'
 
 registerLocaleData(localeDA);
 
@@ -74,6 +75,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'rekvirenter',
+    component: RekvirentComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'login',
     component: LoginComponent
   },
@@ -94,7 +100,8 @@ const routes: Routes = [
     HomeComponent,
     PriceComponent,
     FakturaPdfComponent,
-    ParsingComponent
+    ParsingComponent,
+    RekvirentComponent
   ],
   imports: [
     BrowserModule,
