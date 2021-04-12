@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
 import { ParseOptions } from 'querystring';
 import { Faktura } from '../common/model/faktura';
 import { Analyse } from '../common/model/analyse';
+import { EnumFakturaStatus } from "../common/model/faktura_status";
 import { NONE_TYPE } from '@angular/compiler/src/output/output_ast';
 import { DownloadService } from '../common/services/download.service';
 import { FormControl } from '@angular/forms';
@@ -46,11 +47,12 @@ export class ParsingComponent implements OnInit {
   view: string = "parses";
   views: string[] = ["parses", "betGrpInParse", "faktsInParse"]
 
-  statuses: number[] = [10, 20, 30];
-  status: number = 10;
+  // status: string = "Alle";
+  status: number = 0;
+  // statuses: string[] = ["Alle", "Usendte", "Sendte", "Slettede"];
 
-  parsetypes: string[] = ["Labka", "Blodbank"];
-  parseTypeToShow : string = "Labka";
+  parsetypes: string[] = ["Alle", "Labka", "Blodbank"];
+  parsetypeToShow : string = "Alle";
 
   allParses: Parsing[];
   filteredParses: Parsing[];
@@ -59,30 +61,89 @@ export class ParsingComponent implements OnInit {
   selectedAnalyser: Analyse[];
   selectedParsing?: Parsing;
 
-  startDate: Date;
-  endDate: Date;
+  parsingStartDate : Date;
+  parsingEndDate   : Date;
+
+  parsingSearchTerm: string;
+  fakturaSearchTerm: string = "";
 
   // selectedParsingId: number;
 
   /**
-   * Checks if the parse is of correct type, and within the selected timeframe
+   * Checks if the parse is of correct type, within the selected timeframe and contains the search term
    */
   parseSatisfiesSearch(parse : Parsing): Boolean {
-    const typeCondition = parse.ptype == this.parseTypeToShow;
-    const dateCondition = this.parseWithinDate(parse)
-    // const nameCondition = 
-    return typeCondition && dateCondition
+    var typeCondition = (this.parsetypeToShow == "Alle") || (parse.ptype == this.parsetypeToShow);
+    // var dateCondition = this.parseWithinDate(parse);
+    var dateCondition = this.GenericWithinDate(parse.oprettet, this.parsingStartDate, this.parsingEndDate);
+    if (!this.parsingSearchTerm) {
+      var nameCondition = true
+    } else {
+      var nameCondition = (parse.filename.toLowerCase().includes(this.parsingSearchTerm.toLowerCase()))
+    }
+    return typeCondition && dateCondition && nameCondition
   }
+
+  /**
+   * Checks if faktura search term appears in faktura rekvirent, betalergrupper or EAN/GLN-number, or is null
+   */
+  fakturaSatisfiesSearch(faktura : Faktura): Boolean {
+    // if (!this.fakturaSearchTerm) {
+    //   return true
+    // }
+    var rekv = faktura.rekvirent;
+    var term = this.fakturaSearchTerm.toLowerCase();
+
+    var isInRekvirent = this.fakturaSearchTerm && rekv.afdelingsnavn.toLowerCase().includes(term);
+    var isInBetalergruppe = rekv.betalergruppe && rekv.betalergruppe.navn.toLowerCase().includes(term);
+    var isInEAN = String(rekv.GLN_nummer).includes(this.fakturaSearchTerm);
+    var hasCorrectStatus = (this.status == 0) || (this.status == faktura.status);
+    console.log(hasCorrectStatus);
+    // var statcheck = faktura.status.
+    return (isInRekvirent || isInBetalergruppe || isInEAN) && hasCorrectStatus
+  }
+
+  /**
+   * Converts between statusnames specified in @this.statuses and opcodes used in the database
+   */
+  // statusNameToOpcode(statusName : string) : number {
+  //   switch(statusName){
+  //     case "Usendte": {
+  //       return 10
+  //     }
+  //     case "Sendte": {
+  //       return 20
+  //     }
+  //     case "Slettede": {
+  //       return 30
+  //     }
+  //     default: {
+  //       return 10
+  //     }
+  //   }
+  // }
 
   /**
    * Returns true if the date of the parsing is after the selected startdate, or no startdate has been selected,
    * and vica-versa with enddate.
    */
-  parseWithinDate(parse : Parsing): Boolean {
-    const isAfter = (!(this.startDate) || (true)) //TODO
-    const isBefore = (!(this.endDate) || (true))
-    return (isAfter && isBefore)
-  }
+  // parseWithinDate(parse : Parsing): Boolean {
+  //   const pDate = new Date(parse.oprettet);
+  //   const isAfter = (!(this.startDate) || (pDate >= this.startDate))
+  //   const isBefore = (!(this.endDate) || (pDate <= this.endDate))
+  //   return (isAfter && isBefore)
+  // }
+
+/**
+ * Returns true if the date of the parsing is after the selected mindate, or no mindate has been selected,
+ * and vica-versa with maxdate.
+ */
+  GenericWithinDate(itemDate : Date, minDate : Date, maxDate : Date): Boolean {
+  var iDate = new Date(itemDate);
+  var isAfter = (!(minDate) || (iDate >= minDate));
+  var isBefore = (!(maxDate) || (iDate <= maxDate))
+  return (isAfter && isBefore)
+}
 
   getParsesNested(): void {
     this.parsingService.getAll(true).subscribe(allParses => this.allParses = allParses)
@@ -103,12 +164,7 @@ export class ParsingComponent implements OnInit {
   }
 
   noop(id = 0): void {
-    // this.testtext = "Noop " + String(this.allParses.length)
-    // this.filteredParses = this.allParses.filter((x: Parsing): boolean => { return (x.oprettet.getTime() >= 1616194800); }) // (x.oprettet.getTime() >= this.startDate.getTime() || (x.oprettet.getTime() <= this.endDate.getTime()
-    // this.testtext = String(this.filteredParses.length)
-    // this.testtext = "noop0 " + String(id);
-    // this.testtext = "noop1 " + String(this.allParses[id].oprettet)
-    this.testtext = "noop2 " + String(this.selectedParsing.oprettet.getDate)
+    this.testtext = String(this.status)
   }
 
   writeBG(bg: Betalergruppe): void{
@@ -118,6 +174,11 @@ export class ParsingComponent implements OnInit {
 
   writeIDOfFakt(fakt: Faktura): void {
     this.testtext = String(fakt.id)
+  }
+
+  writeDateOfParse(parse: Parsing): void {
+    const thisdate = new Date(parse.oprettet);
+    this.testtext = String(thisdate)
   }
 
   testtext = "init"
@@ -146,29 +207,29 @@ export class ParsingComponent implements OnInit {
 
 
   onSelectAlleFakturaer(parsing: Parsing): void {
-    this.getSingleParseNested(parsing.id)
+    this.getSingleParseNested(parsing.id);
+    // delete this.fakturaSearchTerm;
+    this.fakturaSearchTerm = "";
+    this.status = 0;
     this.view = "faktsInParse"
-    this.testtext = String(this.selectedParsing.fakturaer.length)
   }
 
-  onSelect(parsing: Parsing = this.selectedParsing): void {
+  // onSelect(parsing: Parsing = this.selectedParsing): void {
     // this.selectedParsingId = parsing.id)
-    this.getSingleParseNested(parsing.id);
+    // this.getSingleParseNested(parsing.id);
     // this.selectedParsing = parsing;
     // this.selectedFakturaer = parsing.fakturaer.filter((x: Faktura): boolean => { return x.status == (this.status as number); })
     // delete this.selectedFaktura;
     // delete this.selectedAnalyser
     // this.selectedFaktura = undefined;
     // this.selectedAnalyser = [] //!!!!!!
-  }
+  // }
 
   // Denne bruges ikke atm
-  selectedFaktura?: Faktura;
-  onSelectF(faktura: Faktura): void {
-    this.selectedFaktura = faktura;
-    this.selectedAnalyser = faktura.analyser
+  // selectedFaktura?: Faktura;
+  // onSelectF(faktura: Faktura): void {
+  //   this.selectedFaktura = faktura;
+  //   this.selectedAnalyser = faktura.analyser
 
-  }
+  // }
 }
-
-(x: Faktura): boolean => { return x.status == 10; }

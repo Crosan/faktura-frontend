@@ -6,7 +6,7 @@
   <div class="row">
     View:
     <select [(ngModel)]="view" name="selectedView" id="selectedView" class="form-control-sm table-item-width center"
-      #selectedview="ngModel" (change)=onSelect()>
+      #selectedview="ngModel">
       <option *ngFor="let view of views" [value]="view"> {{view}} </option>
     </select>
     {{ testtext }}
@@ -33,10 +33,11 @@
                 <h3 class="mb-1">Alle indlæste faktura-filer</h3>
               </div>
               <div>
-                <input placeholder="Søg efter fakturafil" aria-label="Parsing" class="form-control py-2 search-input"
-                  name="parsing" />
+                <input [(ngModel)]="parsingSearchTerm" placeholder="Søg efter fakturafil" aria-label="Parsing"
+                  class="form-control py-2 search-input" name="parsing" />
                 <!-- [formControl]="analyseControl" -->
               </div>
+              <br>
               <div class="d-flex w-100 justify-content-between">
                 <!-- <mat-date-range-input [rangePicker]="picker">
                   <input matStartDate placeholder="Start date"><br>
@@ -44,22 +45,22 @@
                 </mat-date-range-input>
                 
                 <mat-date-range-picker #picker></mat-date-range-picker> -->
-                <select [(ngModel)]="parseTypeToShow" name="parseTypeToShow" id="parseTypeToShow"
+                <select [(ngModel)]="parsetypeToShow" name="parsetypeToShow" id="parsetypeToShow"
                   class="form-control-sm table-item-width center" #selectedview="ngModel">
                   <option *ngFor="let parsetype of parsetypes" [value]="parsetype"> {{parsetype}} </option>
                 </select>
 
                 <div>
-                <input [(ngModel)]="startDate" matInput [matDatepicker]="pickerStart" placeholder="Fra"
-                  (change)="noop()">
-                <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
-                <mat-datepicker #pickerStart></mat-datepicker>
-              </div>
-              <div>
-                <input [(ngModel)]="enddate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
-                <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
-                <mat-datepicker #pickerEnd></mat-datepicker>
-              </div>
+                  <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="pickerStart" placeholder="Fra"
+                    (change)="noop()">
+                  <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerStart></mat-datepicker>
+                </div>
+                <div>
+                  <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
+                  <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerEnd></mat-datepicker>
+                </div>
               </div>
             </div>
 
@@ -82,7 +83,7 @@
                       <!-- <button type="button" class="btn" (click)="noop()">Betalergrupper</button> -->
                       <button type="button" class="btn" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
                       <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button>
-                      <button type="button" class="btn btn-danger" (click)="noop(parse.id)">Fjern</button>
+                      <button type="button" class="btn btn-danger" (click)="writeDateOfParse(parse)">Fjern</button>
                     </div>
                   </li>
                 </div>
@@ -107,16 +108,29 @@
               <div class="card-header-top w-100 justify-content-between center">
                 <h3 class="mb-1">{{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
               </div>
-            </div>
-            <!-- <div class="card-header text-white bg-info">
-              Sortér efter:
-              <div class="d-flex w-100 justify-content-between left">
-                
-                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Pris</button>
-                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Status</button>
-                <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Betalergruppe</button>
+              <!-- <div class="container"> -->
+                <div class="row">
+                  <div class="col-md-2">
+                    {{ EnumFakturaStatus }}
+                    <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
+                    class="form-control-sm table-item-width center" #selectedStatus="ngModel">
+                    <!-- <option *ngFor="let status of EnumFakturaStatus | keyvalue" [value]="status"> {{status.key}} </option> -->
+                    <option [value]="0">Alle</option>
+                    <option [value]="10">Oprettet</option>
+                    <option [value]="20">Sendt</option>
+                    <option [value]="30">Slettet</option>
+                  </select>
+                  </div>
+                  <div class="col-md-8">
+                    <input [(ngModel)]="fakturaSearchTerm" placeholder="Søg efter faktura" aria-label="Parsing"
+                    class="form-control py-2 search-input" name="parsing" />
+                  </div>
+                <!-- </div> -->
               </div>
-            </div> -->
+              <div>
+              </div>
+            </div>
+  
 
             <div class="card-body">
 
@@ -125,7 +139,7 @@
 
               <ul class="list-group">
                 <div *ngFor="let faktura of selectedParsing.fakturaer; let i = index">
-                  <li class="list-group-item">
+                  <li class="list-group-item" *ngIf="fakturaSatisfiesSearch(faktura)">
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
                         {{ faktura.rekvirent.afdelingsnavn }}
