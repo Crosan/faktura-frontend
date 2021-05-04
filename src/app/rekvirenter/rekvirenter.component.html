@@ -6,11 +6,54 @@
           <div class="card list-width">
             <div class="card-header text-white bg-info">
               <div class="card-header-top w-100 justify-content-between center">
-                <h3 class="mb-1">Alle indlæste faktura-filer</h3>
+                <h3 class="mb-1">Rekvirenter uden EAN-nummer eller betalergruppe</h3>
               </div>
               <div>
-                <input [(ngModel)]="SearchTerm" placeholder="Søg efter rekvirent" aria-label="Parsing"
-                  class="form-control py-2 search-input" name="SearchTerm" />
+                <input placeholder="Søg efter rekvirenter på deres navn, kode eller betalergruppe"
+                  aria-label="Rekvirent" class="form-control py-2 search-input" [formControl]="rekvirentControl"
+                  name="rekvirent" />
+              </div>
+            </div>
+            <div class="container">
+              <div class="rek-group row search-results">
+                <div class="col-md">
+                  <div *ngFor="let rekvirent of filteredRekvirenter | async">
+                    <li class="list-group-item">
+                      <div class="d-flex w-100 justify-content-between">
+                        <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
+                          {{ rekvirent.shortname }}
+                        </label>
+                        <!-- <label style="margin-bottom:0px; margin-top:0.2rem">
+                          {{ faktura.analyser.length }} analyser
+                        </label> -->
+                      </div>
+                      <div class="d-flex w-100 justify-content-between">
+                        <label style="margin-bottom:0px; margin-top:0.2rem"> 
+                          <div *ngIf="rekvirent.betalergruppe; else elseBlockBG" style="display:inline">
+                            Betalergruppe: {{ rekvirent.betalergruppe.navn }} ({{ rekvirent.betalergruppe.bgtype }})
+                          </div>
+                          <ng-template #elseBlockBG>Mangler betalergruppe</ng-template>
+                        </label>
+                        <div *ngIf="rekvirent.GLN_nummer; else elseBlockGLN" style="display:inline">
+                          EAN-nummer: {{ rekvirent.GLN_nummer }}
+                        </div>
+                        <ng-template #elseBlockGLN>Mangler EAN-nummer</ng-template>
+                        <!-- <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
+                          {{ faktura.samlet_pris }} kr.
+                        </label> -->
+                      </div>
+                      <!-- <div class="d-flex w-100 justify-left">
+                        <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
+                          {{ faktura.status }}
+                        </label>
+                      </div> -->
+                      <div class="d-flex w-100 justify-content-between">
+                        <button type="button" class="btn btn-success" (click)="openDialog(rekvirent)">EAN</button>
+                        <button type="button" class="btn btn-danger"  (click)="writeBG(rekvirent.betalergruppe)">Slet</button>
+                      </div>
+                    </li>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

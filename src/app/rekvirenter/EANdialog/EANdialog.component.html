@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>{{data.rekvirentName}}</h1>
+<div mat-dialog-content>
+  <p>Indtast EAN/GLN-nummer</p>
+  <mat-form-field>
+    <mat-label>EAN/GLN-nummer</mat-label>
+    <input matInput [(ngModel)]="svar">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Annullér</button>
+  <button mat-button [mat-dialog-close]="svar" cdkFocusInitial>Ok</button>
+</div>

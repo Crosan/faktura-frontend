@@ -2,16 +2,18 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { AppError } from '../common/error-handling/app-error';
 import { ToasterService, ToasterConfig } from 'angular2-toaster';
 import { ParsingService } from '../common/services/parsing.service';
-import { Parsing } from "../common/model/parsing";
+import { BetalergruppeService } from '../common/services/betalergruppe.service';
+import { FakturaService } from '../common/services/faktura.service'
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ParseOptions } from 'querystring';
-import { Faktura } from '../common/model/faktura';
-import { Analyse } from '../common/model/analyse';
 import { EnumFakturaStatus } from "../common/model/faktura_status";
 import { NONE_TYPE } from '@angular/compiler/src/output/output_ast';
 import { DownloadService } from '../common/services/download.service';
 import { FormControl } from '@angular/forms';
+import { Parsing } from "../common/model/parsing";
+import { Faktura } from '../common/model/faktura';
+import { Analyse } from '../common/model/analyse';
 import { Betalergruppe } from '../common/model/betalergruppe';
 
 @Component({
@@ -20,10 +22,13 @@ import { Betalergruppe } from '../common/model/betalergruppe';
   styleUrls: ['./parsing.component.css']
 })
 export class ParsingComponent implements OnInit {
+  
 
   constructor(private toasterService: ToasterService,
     // private spinner: NgxSpinnerService,
     private parsingService: ParsingService,
+    private betalergruppeService: BetalergruppeService,
+    private fakturaService: FakturaService,
     private downloadService: DownloadService) { }
 
   ngOnInit() {
@@ -45,7 +50,7 @@ export class ParsingComponent implements OnInit {
    * String controlling the view
    */
   view: string = "parses";
-  views: string[] = ["parses", "betGrpInParse", "faktsInParse"]
+  views: string[] = ["parses", "betGrpInParse", "faktsInParse", "faktsInBtlgrpInParse"]
 
   // status: string = "Alle";
   status: number = 0;
@@ -60,12 +65,15 @@ export class ParsingComponent implements OnInit {
   selectedFakturaer: Faktura[];
   selectedAnalyser: Analyse[];
   selectedParsing?: Parsing;
+  selectedBetalergruppe? : Betalergruppe;
+  selectedBetalergrupper?: Betalergruppe[];
 
   parsingStartDate : Date;
   parsingEndDate   : Date;
 
   parsingSearchTerm: string;
   fakturaSearchTerm: string = "";
+  betalergrupppeSearchTerm: string = "";
 
   // selectedParsingId: number;
 
@@ -94,11 +102,19 @@ export class ParsingComponent implements OnInit {
     var rekv = faktura.rekvirent;
     var term = this.fakturaSearchTerm.toLowerCase();
 
-    var isInRekvirent = this.fakturaSearchTerm && rekv.afdelingsnavn.toLowerCase().includes(term);
+    var isInRekvirent = this.fakturaSearchTerm && rekv.shortname.toLowerCase().includes(term);
+    var isInRekvNr = String(rekv.rekv_nr).toLowerCase().includes(term);
     var isInBetalergruppe = rekv.betalergruppe && rekv.betalergruppe.navn.toLowerCase().includes(term);
-    var isInEAN = String(rekv.GLN_nummer).includes(this.fakturaSearchTerm);
+    var isInEAN = String(rekv.GLN_nummer).includes(term);
     var hasCorrectStatus = (this.status == 0) || (this.status == faktura.status);
-    return (isInRekvirent || isInBetalergruppe || isInEAN) && hasCorrectStatus
+    return (isInRekvirent || isInRekvNr || isInBetalergruppe || isInEAN) && hasCorrectStatus
+  }
+
+  betalergruppeSatisfiesSearch(betalergruppe: Betalergruppe): Boolean {
+    var lc_searchterm = this.betalergrupppeSearchTerm.toLowerCase();
+    var isInName = !(this.betalergrupppeSearchTerm) || String(betalergruppe.navn).toLowerCase().includes(lc_searchterm);
+    var hasPrice = Boolean(betalergruppe.sum_total);
+    return (isInName && hasPrice)
   }
 
   /**
@@ -121,17 +137,6 @@ export class ParsingComponent implements OnInit {
   //   }
   // }
 
-  /**
-   * Returns true if the date of the parsing is after the selected startdate, or no startdate has been selected,
-   * and vica-versa with enddate.
-   */
-  // parseWithinDate(parse : Parsing): Boolean {
-  //   const pDate = new Date(parse.oprettet);
-  //   const isAfter = (!(this.startDate) || (pDate >= this.startDate))
-  //   const isBefore = (!(this.endDate) || (pDate <= this.endDate))
-  //   return (isAfter && isBefore)
-  // }
-
 /**
  * Returns true if the date of the parsing is after the selected mindate, or no mindate has been selected,
  * and vica-versa with maxdate.
@@ -148,12 +153,28 @@ export class ParsingComponent implements OnInit {
   }
 
   getSingleParseNested(id: number): void {
-    this.parsingService.get(id, true).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
+    // this.parsingService.get(id, true).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
     // this.parsingService.get()
+    let params = new Map();
+    params.set('parsing', id);
+    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => this.selectedFakturaer = selectedFakturaer)
   }
 
-  getSingleParse(id: number): void {
-    this.parsingService.get(id, false).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
+  // getSingleParse(id: number): void {
+  //   this.parsingService.get(id, false).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
+  // }
+
+  getBetalergrupper(id: number): void{
+    let params = new Map();
+    params.set('parsing', id);
+    this.betalergruppeService.getAll(false, false, params).subscribe(selectedBetalergrupper => this.selectedBetalergrupper = selectedBetalergrupper)
+  }
+
+  getFaktsInBetgInParse(id: number): void {
+    let params = new Map();
+    params.set('parsing', this.selectedParsing.id);
+    params.set('betalergruppe', id);
+    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => this.selectedFakturaer = selectedFakturaer)
   }
 
 
@@ -161,23 +182,23 @@ export class ParsingComponent implements OnInit {
     this.parsingService.getAll(false).subscribe(allParses => this.allParses = allParses)
   }
 
-  noop(id = 0): void {
-    this.testtext = String(this.status)
-  }
+  // noop(id = 0): void {
+  //   this.testtext = String(this.status)
+  // }
 
-  writeBG(bg: Betalergruppe): void{
-    this.testtext = "noopbg " + bg.navn
-  }
+  // writeBG(bg: Betalergruppe): void{
+  //   this.testtext = "noopbg " + bg.navn
+  // }
 
 
-  writeIDOfFakt(fakt: Faktura): void {
-    this.testtext = String(fakt.id)
-  }
+  // writeIDOfFakt(fakt: Faktura): void {
+  //   this.testtext = String(fakt.id)
+  // }
 
-  writeDateOfParse(parse: Parsing): void {
-    const thisdate = new Date(parse.oprettet);
-    this.testtext = String(thisdate)
-  }
+  // writeDateOfParse(parse: Parsing): void {
+  //   const thisdate = new Date(parse.oprettet);
+  //   this.testtext = String(thisdate)
+  // }
 
   testtext = "init"
 
@@ -205,12 +226,31 @@ export class ParsingComponent implements OnInit {
 
 
   onSelectAlleFakturaer(parsing: Parsing): void {
+    this.selectedParsing = parsing;
+    this.selectedFakturaer = [];
     this.getSingleParseNested(parsing.id);
     // delete this.fakturaSearchTerm;
     this.fakturaSearchTerm = "";
     this.status = 0;
     this.view = "faktsInParse"
   }
+
+  onSelectBetalergrupper(parsing: Parsing): void {
+    this.selectedFakturaer = [];
+    this.getBetalergrupper(parsing.id);
+    this.selectedParsing = parsing;
+    this.betalergrupppeSearchTerm = "";
+    this.view = "betGrpInParse"
+  }
+
+  onSelectParsesInBetalergruppe(betalergruppe: Betalergruppe): void {
+    this.selectedFakturaer = [];
+    this.getFaktsInBetgInParse(betalergruppe.id);
+    this.selectedBetalergruppe = betalergruppe;
+    this.fakturaSearchTerm = "";
+    this.view = "faktsInBtlgrpInParse"
+  }
+  
 
   // onSelect(parsing: Parsing = this.selectedParsing): void {
     // this.selectedParsingId = parsing.id)

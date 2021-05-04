@@ -11,6 +11,8 @@ export class Betalergruppe {
     navn: string
     oprettet: Date
     bgtype: string
+    sum_total?: number;
+    antal?: number;
     
     rekvirenter: Rekvirent[]
 
@@ -22,6 +24,8 @@ export class Betalergruppe {
             navn: this.navn,
             oprettet: this.oprettet,
             bgtype: this.bgtype,
+            sum_total: this.sum_total,
+            antal: this.antal,
             rekvirenter: []
         }
 

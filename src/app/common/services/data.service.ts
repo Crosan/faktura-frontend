@@ -18,9 +18,10 @@ export abstract class DataService<T> {
     this.url = environment.url + "/" + resource;
   }
 
-  getAll(nested?: boolean, params?: Map<string, string>) {
+  getAll(nested?: boolean, missing?: boolean, params?: Map<string, string>) {
     const options = this.createOptions(params);
-    const url = nested ? this.url + "-nested" : this.url;
+    // const url = nested ? this.url + "-nested" : this.url;
+    const url = nested ? this.url + "-nested" : (missing ? this.url + "-missing" : this.url);
 
     return this.http.get<T[]>(url + '/', options).pipe(
       map(this.handleResponse),

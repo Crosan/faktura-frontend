@@ -12,8 +12,10 @@ export class Rekvirent {
 
     // hospital: string
     niveau: string
-    afdelingsnavn: string
+    // afdelingsnavn: string
+    shortname: string
     GLN_nummer: string
+    rekv_nr: string
     betalergruppe: Betalergruppe
 
     fakturaer: Faktura[]
@@ -24,8 +26,9 @@ export class Rekvirent {
             id: this.id,
             // hospital: this.hospital,
             niveau: this.niveau,
-            afdelingsnavn: this.afdelingsnavn,
+            afdelingsnavn: this.shortname,
             GLN_nummer: this.GLN_nummer,
+            rekv_nr: this.rekv_nr,
             betalergruppe: this.betalergruppe,
             fakturaer: []
         }
