@@ -1,12 +1,22 @@
-<h1 mat-dialog-title>{{data.rekvirentName}}</h1>
-<div mat-dialog-content>
-  <p>Indtast EAN/GLN-nummer</p>
-  <mat-form-field>
-    <mat-label>EAN/GLN-nummer</mat-label>
-    <input matInput [(ngModel)]="svar">
-  </mat-form-field>
+<div mat-dialog-title>
+  <h3>{{rekvirentName}}</h3>
 </div>
-<div mat-dialog-actions>
-  <button mat-button (click)="onNoClick()">Annullér</button>
-  <button mat-button [mat-dialog-close]="svar" cdkFocusInitial>Ok</button>
+
+<div mat-dialog-content>
+  <!-- <h5>{{subtitle}}</h5> -->
+
+  <!-- <div *ngIf="options?.length">
+    <mat-selection-list #list [(ngModel)]="selectedOptions" (ngModelChange)="onSelection($event, list.selectedOptions)">
+      <mat-list-option *ngFor="let o of options" [value]="o">
+        {{o}}
+      </mat-list-option>
+    </mat-selection-list>
+  </div> -->
+  Test
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-raised-button (click)="annuller()">Annuller</button>
+  <button class="mat-raised-button mat-primary" (click)="ok()">Accepter</button>
+<!-- </mat-dialog-actions> -->
 </div>

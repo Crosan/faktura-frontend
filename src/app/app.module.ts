@@ -10,7 +10,11 @@ import {
   MatAutocompleteModule,
   MatExpansionModule,
   MatButtonModule,
-  MatTabsModule
+  MatTabsModule,
+  MatSnackBarModule,
+  MatSnackBar,
+  MAT_DIALOG_DATA,
+  MatSnackBarContainer
 } from '@angular/material';
 
 import { MaterialFileInputModule } from 'ngx-material-file-input';
@@ -52,6 +56,7 @@ import { SendService } from './common/services/send.service';
 import { ParsingComponent } from './parsing/parsing.component';
 import { RekvirentComponent } from './rekvirenter/rekvirenter.component';
 import { LayoutModule } from '@angular/cdk/layout';
+import { EANdialogComponent } from './rekvirenter/EANdialog/EANdialog.component';
 // import { EANdialogComponent } from './rekvirenter/EANdialog/EANdialog.component'
 
 registerLocaleData(localeDA);
@@ -105,9 +110,9 @@ const routes: Routes = [
     FakturaPdfComponent,
     ParsingComponent,
     RekvirentComponent,
-    // EANdialogComponent,
-    // EANdialogComponent,
+    EANdialogComponent,
   ],
+  entryComponents: [EANdialogComponent,MatSnackBarContainer],
   imports: [
     BrowserModule,
     FormsModule,
@@ -127,6 +132,7 @@ const routes: Routes = [
     // MatDialogModule,
     MatButtonModule,
     MatTabsModule,
+    MatSnackBarModule,
     MaterialFileInputModule,
     HttpClientModule,
     NgxSpinnerModule,
@@ -135,13 +141,15 @@ const routes: Routes = [
     LayoutModule,
     RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })
   ],
-  // entryComponents: [EANdialogComponent],
-  // entryComponents:[MatDialogModule],
   providers: [
     { provide: LOCALE_ID, useValue: "da" },
     {
       provide: ErrorHandler,
       useClass: AppErrorHandler
+    },
+    MatSnackBar, {
+      provide: MAT_DIALOG_DATA,
+      useValue: {}
     },
     JwtHelperService,
     ToasterService,

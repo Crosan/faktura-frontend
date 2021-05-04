@@ -16,14 +16,9 @@ import { Betalergruppe } from '../common/model/betalergruppe';
 import { RekvirentService } from '../common/services/rekvirent.service';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 // import { UpdateEANDialogData, UpdateEANDialog } from './EANdialog/EANdialog.component';
+import { EANdialogComponent, EANdialogData } from './EANdialog/EANdialog.component';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 
-
-
-export interface DialogData {
-  rekvirentName: string;
-  // rekvirentEAN : string;
-}
 
 
 @Component({
@@ -73,20 +68,28 @@ export class RekvirentComponent implements OnInit {
     );
   }
 
-  openDialog(rekvirent: Rekvirent): void {
-    const dialogRef = this.dialog.open(EANdialog, {
-      height: '400px',
-      width: '250px',
-      // data: {name: this.name, animal: this.animal}
-      data: {rekvirentName: rekvirent.shortname}
-    });
+  // openDialog(rekvirent: Rekvirent): void {
+  //   const dialogRef = this.dialog.open(EANdialog, {
+  //     height: '400px',
+  //     width: '250px',
+  //     // data: {name: this.name, animal: this.animal}
+  //     data: {rekvirentName: rekvirent.shortname}
+  //   });
 
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      this.selectedEAN = result;
-    });
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     console.log('The dialog was closed');
+  //     this.selectedEAN = result;
+  //   });
+  // }
+
+  openEANdialog(rekvirent: Rekvirent): void {
+    let dialogData = {
+      rekvirentName: rekvirent.shortname
+    };
+    this.dialog.open(EANdialogComponent, {data: dialogData}); //.afterClosed().toPromise().then(data => {
+      // if (!data) return
+      // let observables: Observable<void>[] = [];}
   }
-
 
   /**
    * This function filters rekvirent objects based on their name, EAN-number, betalergruppe or number.
@@ -129,19 +132,19 @@ export class RekvirentComponent implements OnInit {
 }
 
 
-@Component({
-  selector: 'app-parsing',
-  templateUrl: './EANdialog/EANdialog.component.html',
-  styleUrls: ['./rekvirenter.component.css']
-})
-export class EANdialog {
+// @Component({
+//   selector: 'app-parsing',
+//   templateUrl: './EANdialog/EANdialog.component.html',
+//   styleUrls: ['./rekvirenter.component.css']
+// })
+// export class EANdialog {
 
-  constructor(
-    public dialogRef: MatDialogRef<EANdialog>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+//   constructor(
+//     public dialogRef: MatDialogRef<EANdialog>,
+//     @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
 
-  onNoClick(): void {
-    this.dialogRef.close();
-  }
+//   onNoClick(): void {
+//     this.dialogRef.close();
+//   }
 
-}
+// }
