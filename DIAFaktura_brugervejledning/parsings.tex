@@ -1,0 +1,23 @@
+\subsection{Analysefiler}
+Analysefilerne (excel) indeholder Labka-data. Meget af informationen er redundant, men det er påkrævet at felterne \texttt{BETALERGRUPPE\_SOR}, \texttt{CPRNR}, \texttt{LABKAKODE}, \texttt{REKVIRENT}, \texttt{SHORTNME}, \texttt{EAN\_NUMMER}, \texttt{PRVTAGNDATO} og \texttt{SVARDATO} er til stede.
+
+\subsection{Indlæsning af analysefiler}
+På fanebladet 'Upload excel-ark' uploades analysefiler. Efter filer er blevet uploadet går processeringen af dem i gang. Dette kan tage adskillige timer.\\ \\
+\noindent \includegraphics[width=\linewidth]{images/upload_filled}\\ \\
+Når processeringen er gået i gang indikeres dens status under fanen 'Kørsler'. Du kan bruge resten af systemet imedens processeringen er i gang, men ikke interagere med den pågældende kørsel (udover at slette den) før det er færdigt.\\
+På skærmbilledet nedenfor ses to kørsler, hvoraf den ene er færdigbehandlet.\\
+
+\noindent \includegraphics[width=\linewidth]{images/parses_processing}
+
+\subsection{Fejl}
+Når en analyse-fil er færdigbehandlet gemmes tre filer til orientering om hvilke analyser der fejlede og hvorfor. De kan tilgås via 'Fejl' knappen på den korresponderende kørsel.\\
+
+\noindent \includegraphics[width=\linewidth]{images/parses_mangellister}
+\\ \\
+\subsubsection{Ukendte analysetyper}
+I filerne 'Ukendte analysetyper' og 'Analysetyper uden pris' findes lister over analysetyper som enten slet ikke er blevet oprettet endnu, eller som er blevet oprettet men som ikke har en registreret pris for den periode som analyserne i analyse-filen tilhører.\\
+Disse kan trækkes direkte ind i en pris-fil à la filerne nævnt i sektion 2 og indlæses under fanen 'Priser'.
+
+\subsubsection{Mangelliste}
+Denne fil indeholder alle de analyser fra kørslen som ikke blev registreret grundet manglende information om analysetype eller -pris, og er i samme format som den originalt uploadede analyse-fil. \\
+Når de ovennævnte analyser er blevet oprettet eller prissat kan denne mangelfil indlæses igen som sin egen kørsel.

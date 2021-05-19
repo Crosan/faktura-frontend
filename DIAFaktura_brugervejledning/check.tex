@@ -1,0 +1,25 @@
+\subsection{Kontrol af manglende info}
+For at sende en faktura, skal rekvirentens debitornummeret være kendt. Ved indlæsningen forsøger systemet at matche det vedlagte EAN/GLN-nummer på en kendt debitor, men det lykkes ikke altid da nogle EAN/GLN-numre er tilknyttet enten ingen eller adskillige debitorer.\\
+Der vil blive lavet præcis én faktura til hver relevant rekvirent i en kørsel. Hvis rekvirentens debitornummer ikke er kendt, vil det være indikeret med en knap til at indtaste dette. Hvis rekvirentens EAN/GLN-nummer korresponderer til mere end én debitor, vil disse blive foreslået i indtastningsdialogen, men hvis ikke må debitornummeret manuelt indhentes og indtastes.\\
+Hvis en rekvirents betalergruppe ikke er kendt, vælges den på listen over registrerede betalergrupper. \\
+\begin{center}
+\includegraphics[width=.4\linewidth]{images/debitor}\quad\includegraphics[width=.4\linewidth]{images/betaler_choice}\\
+\end{center}
+
+\subsubsection{Alle fakturaer}
+I oversigten 'Alle fakturaer' ses samtlige fakturaer registreret i kørslen, sorteret efter samlet pris. Denne oversigt vil sandsynligvis være ganske lang.
+
+\includegraphics[width=\linewidth]{images/alle_fakturaer_i_parse}
+
+\subsubsection{Betalergrupper}
+Her ses fakturaer i kørslen fordelt på betalergrupper, og man kan se de enkelte fakturaer tilhørende den pågældende betalergruppe ved at vælge knappen 'X fakturaer (Y total)' (hvor X er antallet af endnu usendte fakturaer, og Y er det totale antal fakturaer). \\
+
+\includegraphics[width=\linewidth]{images/betalergrupper_short}
+
+\subsubsection{Rekvirenter med manglende info}
+Under dette menupunkt findes oversigten over alle registrerede rekvirenter (på tværs af kørsler) som mangler enten betalergruppe eller debitornummer.
+
+\includegraphics[width=\linewidth]{images/rekv_mangler}
+\\
+Det anbefales at bruge tiden tidligt på at løbe denne oversigt igennem og udfylde manglende info, da det kun skal gøres én gang.
+
