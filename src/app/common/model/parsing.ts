@@ -15,7 +15,10 @@ export class Parsing {
     oprettet: Date
     // oprettet_af: Profile // Dette er ikke i Django-db'en
     sent: Boolean
+    done: Boolean
     ptype: string
+    status: string
+    antal_fakturaer: number
     // filename: string
 
     @Type(() => Faktura)
@@ -29,6 +32,9 @@ export class Parsing {
             mangel_liste_fil: this.mangel_liste_fil,
             oprettet: this.oprettet,
             ptype: this.ptype,
+            status: this.status,
+            done: this.done,
+            antal_fakturaer: this.antal_fakturaer,
             // oprettet_af: this.oprettet_af.id,
             fakturaer: []
         }

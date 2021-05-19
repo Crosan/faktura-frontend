@@ -1,6 +1,7 @@
 import { AnalyseType } from './analyse-type';
 import { Faktura } from './faktura';
 import { Betalergruppe } from './betalergruppe'
+import { StringifyOptions } from 'querystring';
 
 /**
  * @module Model
@@ -17,6 +18,7 @@ export class Rekvirent {
     GLN_nummer: string
     rekv_nr: string
     betalergruppe: Betalergruppe
+    debitor_nr: string
 
     fakturaer: Faktura[]
 
@@ -30,6 +32,7 @@ export class Rekvirent {
             GLN_nummer: this.GLN_nummer,
             rekv_nr: this.rekv_nr,
             betalergruppe: this.betalergruppe,
+            debitor_nr: this.debitor_nr,
             fakturaer: []
         }
 

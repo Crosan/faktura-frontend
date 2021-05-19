@@ -18,6 +18,7 @@ export class Faktura {
     status: EnumFakturaStatus
     parsing: number
     rekvirent: Rekvirent
+    antal_analyser: number
 
     analyser: Analyse[]
 
@@ -32,6 +33,7 @@ export class Faktura {
             status: this.status,
             parsing: this.parsing,
             rekvirent: this.rekvirent.id,
+            antal_analyser: this.antal_analyser,
             analyser: []
         }
 

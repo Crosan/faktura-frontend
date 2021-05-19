@@ -13,6 +13,8 @@ export class Betalergruppe {
     bgtype: string
     sum_total?: number;
     antal?: number;
+    antal_unsent?: number;
+    sum_unsent?: number;
     
     rekvirenter: Rekvirent[]
 
@@ -26,6 +28,8 @@ export class Betalergruppe {
             bgtype: this.bgtype,
             sum_total: this.sum_total,
             antal: this.antal,
+            antal_unsent: this.antal_unsent,
+            sum_unsent: this.sum_unsent,
             rekvirenter: []
         }
 

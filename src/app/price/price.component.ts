@@ -10,6 +10,7 @@ import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BadInputError } from '../common/error-handling/bad-request-error';
 import { DownloadService } from '../common/services/download.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-price',
@@ -46,7 +47,8 @@ export class PriceComponent implements OnInit {
     private priceService: PriceService,
     private analyseTypeService: AnalyseTypeService,
     private analysePrisService: AnalysePrisService,
-    private downloadService: DownloadService) { }
+    private downloadService: DownloadService,
+    private spinner: NgxSpinnerService) { }
 
   /**
  * Downloads the file attached to the faktura object from the database
@@ -99,6 +101,7 @@ export class PriceComponent implements OnInit {
   }
 
   uploadPriceFile() {
+    this.spinner.show();
     let form = new FormData();
     form.append('file', this.selectedFile, this.selectedFile.name)
 
@@ -166,10 +169,11 @@ export class PriceComponent implements OnInit {
           else if (!p.duplikat) return 1;
           else return 0;
         });
-
+        this.spinner.hide();
         this.toasterService.pop('success', 'Success', 'Prisfilen blev uploadet');
       },
         (error: AppError) => {
+          this.spinner.hide();
           this.toasterService.pop('failure', 'Fejl', 'Prisfilen blev ikke uploadet');
           console.log("Error", error)
         }
@@ -189,6 +193,7 @@ export class PriceComponent implements OnInit {
   }
 
   submitTypes() {
+    this.spinner.show();
     let observables: Observable<void>[] = [];
 
     for (let analyse_type of this.analyse_typer) {
@@ -219,7 +224,7 @@ export class PriceComponent implements OnInit {
       .subscribe(_ => {
         //Filter list so only duplicates remain
         this.analyse_typer = this.analyse_typer.filter(analyse_type => analyse_type.duplikat)
-
+        this.spinner.hide();
         this.toasterService.pop('success', 'Success', 'De nye analysetyper blev oprettet');
 
         if (this.analyse_typer.length == 0) {
@@ -227,15 +232,19 @@ export class PriceComponent implements OnInit {
         }
       },
         (error: AppError) => {
-          this.toasterService.pop('failure', 'Fejl', 'Der gik noget galt under oprettelsen af nye analysetyper');
+          this.spinner.hide();
+
+          this.toasterService.pop('failure', 'Fejl', 'Der gik noget galt under oprettelsen af nye analysetyper æ');
+          
           throw error;
         }
       )
+    this.spinner.hide();
   }
 
   submitPrices() {
+    this.spinner.show();
     let observables: Observable<void>[] = [];
-
     for (let pris of this.priser) {
 
       console.log(pris.flatten())
@@ -266,10 +275,11 @@ export class PriceComponent implements OnInit {
       .subscribe(_ => {
         //Filter list so only duplicates remain
         this.priser = this.priser.filter(pris => pris.duplikat)
-
+        this.spinner.hide();
         this.toasterService.pop('success', 'Success', 'De nye priser blev oprettet');
       },
         (error: AppError) => {
+          this.spinner.hide();
           this.toasterService.pop('failure', 'Fejl', 'Der gik noget galt under oprettelsen af nye analysepriser');
           console.log(error)
         }

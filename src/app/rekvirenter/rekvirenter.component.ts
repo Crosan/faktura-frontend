@@ -14,11 +14,14 @@ import { DownloadService } from '../common/services/download.service';
 import { FormControl } from '@angular/forms';
 import { Betalergruppe } from '../common/model/betalergruppe';
 import { RekvirentService } from '../common/services/rekvirent.service';
+import { BetalergruppeService } from '../common/services/betalergruppe.service';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 // import { UpdateEANDialogData, UpdateEANDialog } from './EANdialog/EANdialog.component';
-import { EANdialogComponent, EANdialogData } from './EANdialog/EANdialog.component';
+import { DebitorDialogComponent, DebitorDialogData } from './DebitorDialog/DebitorDialog.component';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-
+import { BetalergruppedialogComponent } from './betalergruppedialog/betalergruppedialog.component';
+import { DebitorService } from '../common/services/debitor.service';
+// import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
 
 @Component({
@@ -33,6 +36,8 @@ export class RekvirentComponent implements OnInit {
   constructor(private toasterService: ToasterService,
     // private spinner: NgxSpinnerService,
     private rekvirentService: RekvirentService,
+    private betalergruppeService: BetalergruppeService,
+    private debitorService: DebitorService,
     public dialog: MatDialog,
     private downloadService: DownloadService) { }
 
@@ -41,7 +46,7 @@ export class RekvirentComponent implements OnInit {
   /**
    * List of all rekvirent-objects that are relevant for this component
    */
-   rekvirenter: Rekvirent[] = [];
+  rekvirenter: Rekvirent[] = [];
 
   /**
    * Form control for the rekvirent autocomplete field
@@ -53,20 +58,35 @@ export class RekvirentComponent implements OnInit {
    */
   filteredRekvirenter: Observable<Rekvirent[]>;
 
+  betalergrupper: Betalergruppe[];
+  searchTerm: string = "";
 
   ngOnInit() {
     // this.spinner.show();
     // this.getParses();
-    this.getData()
+    this.getData();
+    this.getBetalergrupper();
   } 
 
-  searchTerm: string = "";
 
+  /**
+   * Gets and filters rekvirent-objects
+   */
   getData() {
-    this.rekvirentService.getAll(false, true).subscribe(allParses => this.rekvirenter = allParses);
-    this.filteredRekvirenter = this.rekvirentControl.valueChanges.pipe(startWith(""),map((a) => (a ? this._filterAnalyser(a) : this.rekvirenter))
-    );
+    this.rekvirentService.getAll(false, true).subscribe(allrekvirenter => {
+      this.rekvirenter = allrekvirenter;
+      this.filteredRekvirenter = this.rekvirentControl.valueChanges.pipe(startWith(""), map((a) => (a ? this._filterAnalyser(a) : this.rekvirenter)));
+    });
+    
+    this.rekvirentControl.disable();
+    this.rekvirentControl.enable();
+    // this.rekvirentControl.setValue.;
   }
+
+  getBetalergrupper(): void {
+    this.betalergruppeService.getAll(false, false).subscribe(allBGs => this.betalergrupper = allBGs)
+  };
+
 
   // openDialog(rekvirent: Rekvirent): void {
   //   const dialogRef = this.dialog.open(EANdialog, {
@@ -83,13 +103,46 @@ export class RekvirentComponent implements OnInit {
   // }
 
   openEANdialog(rekvirent: Rekvirent): void {
-    let dialogData = {
-      rekvirentName: rekvirent.shortname
-    };
-    this.dialog.open(EANdialogComponent, {data: dialogData}); //.afterClosed().toPromise().then(data => {
-      // if (!data) return
+    let params = new Map();
+    params.set('ean', rekvirent.GLN_nummer);
+    this.debitorService.getAll(false, false, params).subscribe( foundDebitors => {
+      let dialogData = {
+        rekvirentName: rekvirent.shortname,
+        debitorer: foundDebitors
+      };
+      this.dialog.open(DebitorDialogComponent, {height: '300px', width: '600px', data: dialogData}).afterClosed().toPromise().then(data => {
+        if (!data) return
+        else {
+          let rekvirent_form = new FormData();
+          rekvirent_form.append("id", rekvirent.id.toString());
+          rekvirent_form.append("debitor_nr", data.response);
+          this.rekvirentService.update(rekvirent_form, false).subscribe(response => {
+            rekvirent.debitor_nr = data.response
+          });
+          // TODO: fjern rekvirent fra listen eller markér som gjort
+        }
+      })
+    })
       // let observables: Observable<void>[] = [];}
   }
+  
+
+  
+  openBetalergruppedialog(rekvirent: Rekvirent): void {
+    let dialogData = {
+      rekvirentName: rekvirent.shortname,
+      betalergrupper: this.betalergrupper 
+    };
+    this.dialog.open(BetalergruppedialogComponent, {width: "400px", data: dialogData}).afterClosed().toPromise().then(data => {
+      if (!data) return
+      else {
+        let rekvirent_form = new FormData();
+        rekvirent_form.append("id", rekvirent.id.toString());
+        rekvirent_form.append("betalergruppe", data.response);
+        this.rekvirentService.update(rekvirent_form, false).subscribe(response => {console.log(response)});
+      }
+    });
+  };
 
   /**
    * This function filters rekvirent objects based on their name, EAN-number, betalergruppe or number.

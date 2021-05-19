@@ -53,6 +53,7 @@ export abstract class DataService<T> {
   update(resource, nested?: boolean, params?: Map<string, string>): Observable<T> {
     const options = this.createOptions(params);
     const url = nested ? this.url + "-nested" : this.url;
+    console.log(url);
 
     if (!resource.id) {
       return this.http.put<T>(url + '/' + resource.get('id') + '/', resource, options).pipe(

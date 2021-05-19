@@ -1,19 +1,8 @@
-.failure {
-    background-color: red;
-}
+
 
 .fileSelectBtn {
-    background-color: blue; 
+    background-color: dimgray; 
     color: white;
-}
-
-.openDialogBtn {
-    background-color: rgb(105, 105, 105); 
-    color: white;
-}
-
-.matmenu {
-    background-color: rgb(244,244,244);
 }
 
 .item-text:hover {
@@ -35,7 +24,7 @@
 }
 
   .form-field-width{
-    width:60%;
+    width:100%;
 }
 
 .mini-form-field-width{
@@ -82,3 +71,7 @@ textarea {
     background-color: rgb(39, 176, 221);
     color: white;
 }
+
+.mat-form-field {
+    width: 100%;
+  }

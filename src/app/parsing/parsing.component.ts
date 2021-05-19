@@ -4,6 +4,7 @@ import { ToasterService, ToasterConfig } from 'angular2-toaster';
 import { ParsingService } from '../common/services/parsing.service';
 import { BetalergruppeService } from '../common/services/betalergruppe.service';
 import { FakturaService } from '../common/services/faktura.service'
+import { FakturaStatusService } from '../common/services/faktura_status.service'
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ParseOptions } from 'querystring';
@@ -15,6 +16,15 @@ import { Parsing } from "../common/model/parsing";
 import { Faktura } from '../common/model/faktura';
 import { Analyse } from '../common/model/analyse';
 import { Betalergruppe } from '../common/model/betalergruppe';
+import { MatMenuModule } from '@angular/material/menu';
+import { formatDate } from '@angular/common';
+import { SendService } from '../common/services/send.service';
+import { Rekvirent } from '../common/model/rekvirent';
+import { DebitorDialogComponent } from '../rekvirenter/DebitorDialog/DebitorDialog.component';
+import { DebitorService } from '../common/services/debitor.service';
+import { MatDialog } from '@angular/material/dialog';
+import { RekvirentService } from '../common/services/rekvirent.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-parsing',
@@ -22,13 +32,22 @@ import { Betalergruppe } from '../common/model/betalergruppe';
   styleUrls: ['./parsing.component.css']
 })
 export class ParsingComponent implements OnInit {
-  
+  public config: ToasterConfig = new ToasterConfig({
+    positionClass: 'toast-top-right'
+  });
+
 
   constructor(private toasterService: ToasterService,
     // private spinner: NgxSpinnerService,
     private parsingService: ParsingService,
     private betalergruppeService: BetalergruppeService,
     private fakturaService: FakturaService,
+    private fakturaStatusService: FakturaStatusService,
+    private sendService: SendService,
+    private debitorService: DebitorService,
+    private rekvirentService: RekvirentService,
+    private spinner: NgxSpinnerService,
+    public dialog: MatDialog,
     private downloadService: DownloadService) { }
 
   ngOnInit() {
@@ -57,7 +76,7 @@ export class ParsingComponent implements OnInit {
   // statuses: string[] = ["Alle", "Usendte", "Sendte", "Slettede"];
 
   parsetypes: string[] = ["Alle", "Labka", "Blodbank"];
-  parsetypeToShow : string = "Alle";
+  parsetypeToShow: string = "Alle";
 
   allParses: Parsing[];
   filteredParses: Parsing[];
@@ -65,11 +84,11 @@ export class ParsingComponent implements OnInit {
   selectedFakturaer: Faktura[];
   selectedAnalyser: Analyse[];
   selectedParsing?: Parsing;
-  selectedBetalergruppe? : Betalergruppe;
+  selectedBetalergruppe?: Betalergruppe;
   selectedBetalergrupper?: Betalergruppe[];
 
-  parsingStartDate : Date;
-  parsingEndDate   : Date;
+  parsingStartDate: Date;
+  parsingEndDate: Date;
 
   parsingSearchTerm: string;
   fakturaSearchTerm: string = "";
@@ -78,9 +97,184 @@ export class ParsingComponent implements OnInit {
   // selectedParsingId: number;
 
   /**
+   * Returns the creation date of the parsing formatted as 'yyyyMMddHHmmss' in Danish locale.
+   */
+  timeFormat(parse: Parsing): string {
+    // let ourTime = parse.oprettet.toDateString()
+    let retval = formatDate(parse.oprettet, 'yyyyMMddHHmmss', 'DA-DK');
+    // let retval = String(parse.oprettet.getFullYear()) + String(parse.oprettet.getMonth()) + String(parse.oprettet.getDate()) + String(parse.oprettet.getHours()) + String(parse.oprettet.getMinutes()) + String(parse.oprettet.getSeconds());    console.log(retval);
+    console.log(retval);
+    return retval
+  }
+
+  /**
+   * Conjugates the noun in either plural or singular 
+   * @param count 
+   * @param noun 
+   * @param suffix 
+   */
+  plural(count, noun, suffix = 'r'): string {
+    // return `${count} ${noun}${count !== 1 ? suffix : ''}`;
+    return `${noun}${count !== 1 ? suffix : ''}`;
+  }
+
+  /**
+   * Determines whether the faktura satisfies conditions for sending,
+   * i.e. being unsent, having a debitor and having a number of analyses
+   * @param faktura 
+   * @returns boolean
+   */
+  fakturaIsSendable(faktura: Faktura): boolean {
+    if (!faktura.rekvirent.debitor_nr) {
+      return false
+    } else if (faktura.status != 10) {
+      return false
+    } else if (faktura.antal_analyser < 1) {
+      return false
+    } else {
+      return true
+    }
+  }
+
+  /**
+   * Looks up if any debitors match the GLN/EAN number of the rekvirent, and adds them
+   * as suggested debitors in the dialog. Updates rekvirent.debitor on return by 'Gem'.
+   * @param rekvirent 
+   */
+  openDebitordialog(rekvirent: Rekvirent): void {
+    let params = new Map();
+    params.set('ean', rekvirent.GLN_nummer);
+    this.debitorService.getAll(false, false, params).subscribe( foundDebitors => {
+      let dialogData = {
+        rekvirentName: rekvirent.shortname,
+        debitorer: foundDebitors
+      };
+      this.dialog.open(DebitorDialogComponent, {height: '300px', width: '600px', data: dialogData}).afterClosed().toPromise().then(data => {
+        if (!data) return
+        else {
+          let rekvirent_form = new FormData();
+          rekvirent_form.append("id", rekvirent.id.toString());
+          rekvirent_form.append("debitor_nr", data.response);
+          this.rekvirentService.update(rekvirent_form, false).subscribe(response => {
+            rekvirent.debitor_nr = data.response
+          });
+          // TODO: fjern rekvirent fra listen eller markér som gjort
+        }
+      })
+    })
+      // let observables: Observable<void>[] = [];}
+  }
+
+  // sendButtonTooltips: string[] = ["Send", "Rekvirent mangler debitor-nr", "Faktura er allerede sendt eller slettet", "Der er ingen analyser i fakturaen"];
+
+  deleteParsing(parse: Parsing): void {
+      if(confirm("Er du sikker? Dette kan ikke omgøres.")) {
+        this.parsingService.delete(parse.id).subscribe( response => {
+          this.allParses = this.allParses.filter(obj => obj !== parse);
+        })
+      }
+  }
+
+  deleteFaktura(faktura: Faktura): void{
+    let faktura_form = new FormData();
+    faktura_form.append("id", faktura.id.toString());
+    faktura_form.append("status", '30');
+    faktura_form.append("parsing", faktura.parsing.toString());
+    // console.log(faktura_form);
+    // console.log(faktura_form.get('status'));
+    this.fakturaService.update(faktura_form, false).subscribe(response => {
+      faktura.status = 30;
+      this.selectedBetalergruppe.antal_unsent -= 1;
+      this.selectedBetalergruppe.sum_unsent -= faktura.samlet_pris;
+      // console.log(response)
+      // let status_form = new FormData();
+      // status_form.append('faktura', faktura.id.toString());
+      // status_form.append('status', '30');
+      // this.fakturaStatusService.create(status_form, false).subscribe()
+    });
+    // this.fakturaStatusService.create()
+  }
+
+  sendSingleFaktura(fakt: Faktura): void {
+    this.sendService.newSend([fakt]).subscribe();
+    if (this.selectedBetalergruppe) {
+      this.selectedBetalergruppe.sum_unsent -= fakt.samlet_pris;
+      this.selectedBetalergruppe.antal_unsent -= 1;
+    }
+  }
+
+  sendAllFakturasInBGInParse(betalergruppe: Betalergruppe): void {
+    this.spinner.show();
+    this.selectedFakturaer = [];
+    let params = new Map();
+    params.set('parsing', this.selectedParsing.id);
+    params.set('betalergruppe', betalergruppe.id);
+    // Fetch all fakturas for this betalergruppe in this parsing
+    this.fakturaService.getAll(true, false, params).subscribe(returnedFakturaer => {
+      // Remove fakturas with status 'sent' or 'deleted', with no analysis objects, or without debitor
+      this.selectedFakturaer = returnedFakturaer.filter((item: Faktura) => (this.fakturaIsSendable(item)));
+      
+      if (this.selectedFakturaer.length > 0) {
+        this.sendService.newSend(this.selectedFakturaer).subscribe( response => {
+          if ((betalergruppe.antal_unsent - this.selectedFakturaer.length) > 0) {
+            console.log('Ikke alle blev sendt');
+            betalergruppe.antal_unsent -= this.selectedFakturaer.length;
+            let sum: number = 0;
+            this.selectedFakturaer.forEach(a => sum += a.samlet_pris);
+            betalergruppe.sum_unsent -= sum
+            let msg = this.plural(betalergruppe.antal_unsent, ' faktura', 'er')
+            this.spinner.hide();
+            this.toasterService.pop('failure', String(betalergruppe.antal_unsent) + msg + ' blev ikke sendt, check for korrekte debitorer');
+          } else {
+            console.log('Alle blev sendt, hurra');
+            this.toasterService.pop('success', 'Alle fakturaer blev sendt');
+            this.spinner.hide();
+            betalergruppe.antal_unsent = 0;
+            betalergruppe.sum_unsent = 0
+          };
+        });
+      } else {
+        console.log('Bah, empty');
+        let diff = betalergruppe.antal_unsent;
+        let msg = this.plural(diff, ' faktura', 'er');
+        this.spinner.hide();
+        this.toasterService.pop('failure', String(diff) + msg + ' blev ikke sendt, check for korrekte debitorer');
+      }
+    }
+    )
+
+  }
+
+  /**
+ * Downloads the mangelliste-file corresponding to the type and parsing
+ */
+  downloadFile(parse: Parsing, type: string) {
+    let popup = window.open('', '_blank');
+
+    // let path = "templates/" + this.template + "_template.xlsx";
+    let path = "mangellister/" + parse.filename + "_-_"
+      + formatDate(parse.oprettet, 'yyyyMMddHHmmss', 'Da-DK', "utc")
+      + '_' + type + "_" + String(parse.id) + ".xlsx";
+    console.log(path)
+    // TODO: ASCII escape path
+
+    this.downloadService.download(path).
+      subscribe(file => {
+        var url = window.URL.createObjectURL(file);
+        popup.location.href = url;
+        popup.focus();
+        popup.onblur = function () { popup.close() };
+      },
+        (error: AppError) => {
+          console.log("Error getting file", error)
+        }
+      );
+  }
+
+  /**
    * Checks if the parse is of correct type, within the selected timeframe and contains the search term
    */
-  parseSatisfiesSearch(parse : Parsing): Boolean {
+  parseSatisfiesSearch(parse: Parsing): Boolean {
     var typeCondition = (this.parsetypeToShow == "Alle") || (parse.ptype == this.parsetypeToShow);
     // var dateCondition = this.parseWithinDate(parse);
     var dateCondition = this.GenericWithinDate(parse.oprettet, this.parsingStartDate, this.parsingEndDate);
@@ -95,7 +289,7 @@ export class ParsingComponent implements OnInit {
   /**
    * Checks if faktura search term appears in faktura rekvirent, betalergrupper or EAN/GLN-number, or is null
    */
-  fakturaSatisfiesSearch(faktura : Faktura): Boolean {
+  fakturaSatisfiesSearch(faktura: Faktura): Boolean {
     // if (!this.fakturaSearchTerm) {
     //   return true
     // }
@@ -137,16 +331,16 @@ export class ParsingComponent implements OnInit {
   //   }
   // }
 
-/**
- * Returns true if the date of the parsing is after the selected mindate, or no mindate has been selected,
- * and vica-versa with maxdate.
- */
-  GenericWithinDate(itemDate : Date, minDate : Date, maxDate : Date): Boolean {
-  var iDate = new Date(itemDate);
-  var isAfter = (!(minDate) || (iDate >= minDate));
-  var isBefore = (!(maxDate) || (iDate <= maxDate))
-  return (isAfter && isBefore)
-}
+  /**
+   * Returns true if the date of the parsing is after the selected mindate, or no mindate has been selected,
+   * and vica-versa with maxdate.
+   */
+  GenericWithinDate(itemDate: Date, minDate: Date, maxDate: Date): Boolean {
+    var iDate = new Date(itemDate);
+    var isAfter = (!(minDate) || (iDate >= minDate));
+    var isBefore = (!(maxDate) || (iDate <= maxDate))
+    return (isAfter && isBefore)
+  }
 
   getParsesNested(): void {
     this.parsingService.getAll(true).subscribe(allParses => this.allParses = allParses)
@@ -164,7 +358,7 @@ export class ParsingComponent implements OnInit {
   //   this.parsingService.get(id, false).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
   // }
 
-  getBetalergrupper(id: number): void{
+  getBetalergrupper(id: number): void {
     let params = new Map();
     params.set('parsing', id);
     this.betalergruppeService.getAll(false, false, params).subscribe(selectedBetalergrupper => this.selectedBetalergrupper = selectedBetalergrupper)
@@ -182,9 +376,9 @@ export class ParsingComponent implements OnInit {
     this.parsingService.getAll(false).subscribe(allParses => this.allParses = allParses)
   }
 
-  // noop(id = 0): void {
-  //   this.testtext = String(this.status)
-  // }
+  noop(thing: any): void {
+    console.log(thing)
+  }
 
   // writeBG(bg: Betalergruppe): void{
   //   this.testtext = "noopbg " + bg.navn
@@ -202,9 +396,9 @@ export class ParsingComponent implements OnInit {
 
   testtext = "init"
 
-/**
- * Downloads the file attached to the faktura object from the database
- */
+  /**
+   * Downloads the file attached to the faktura object from the database
+   */
   downloadMangelliste(parse: Parsing) {
 
     let popup = window.open('', '_blank');
@@ -250,17 +444,17 @@ export class ParsingComponent implements OnInit {
     this.fakturaSearchTerm = "";
     this.view = "faktsInBtlgrpInParse"
   }
-  
+
 
   // onSelect(parsing: Parsing = this.selectedParsing): void {
-    // this.selectedParsingId = parsing.id)
-    // this.getSingleParseNested(parsing.id);
-    // this.selectedParsing = parsing;
-    // this.selectedFakturaer = parsing.fakturaer.filter((x: Faktura): boolean => { return x.status == (this.status as number); })
-    // delete this.selectedFaktura;
-    // delete this.selectedAnalyser
-    // this.selectedFaktura = undefined;
-    // this.selectedAnalyser = [] //!!!!!!
+  // this.selectedParsingId = parsing.id)
+  // this.getSingleParseNested(parsing.id);
+  // this.selectedParsing = parsing;
+  // this.selectedFakturaer = parsing.fakturaer.filter((x: Faktura): boolean => { return x.status == (this.status as number); })
+  // delete this.selectedFaktura;
+  // delete this.selectedAnalyser
+  // this.selectedFaktura = undefined;
+  // this.selectedAnalyser = [] //!!!!!!
   // }
 
   // Denne bruges ikke atm

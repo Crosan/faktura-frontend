@@ -1,0 +1,36 @@
+<div mat-dialog-title>
+  <h3>{{rekvirentName}}</h3>
+</div>
+
+<div mat-dialog-content>
+  <!-- <p>
+    <mat-form-field>
+      <mat-label>Betalergruppe</mat-label>
+      <input type="text" placeholder="Pick one" aria-label="Betalergruppe" matInput [formControl]="myControl"
+        [matAutocomplete]="auto">
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngFor="let option of betalergrupper" [value]="option.navn">
+          {{option.navn}}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </p> -->
+  <mat-form-field appearance="fill">
+    <mat-label>Select an option</mat-label>
+    <mat-select [(value)]="selected">
+      <div *ngFor="let bg of betalergrupper">
+        <mat-option value={{bg.id}}>{{bg.navn}}</mat-option>
+      </div>
+      <!-- <mat-option>None</mat-option>
+      <mat-option value="option1">Option 1</mat-option>
+      <mat-option value="option2">Option 2</mat-option>
+      <mat-option value="option3">Option 3</mat-option> -->
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-raised-button (click)="annuller()">Annuller</button>
+  <button class="mat-raised-button mat-primary" (click)="ok()">Gem</button>
+  <!-- </mat-dialog-actions> -->
+</div>

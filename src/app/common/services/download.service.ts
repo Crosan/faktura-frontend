@@ -28,7 +28,7 @@ export class DownloadService {
       params: params,
       responseType: "blob" as "blob"
     };
-
+    console.log(options);
     return this.http.get(this.url, options)
   }
 }

@@ -2,6 +2,10 @@
   <p style="font-size: 20px; color: white">{{spinnerText}}</p>
 </ngx-spinner> -->
 
+<ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
+  <p style="font-size: 20px; color: white">Sender fakturaer...</p>
+</ngx-spinner>
+
 <div class="container">
   <!-- <div class="row">
     View:
@@ -50,16 +54,30 @@
                   <option *ngFor="let parsetype of parsetypes" [value]="parsetype"> {{parsetype}} </option>
                 </select>
 
-                <div>
-                  <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="pickerStart" placeholder="Fra"
-                    (change)="noop()">
+                <!-- <div>
+                  <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="pickerStart" placeholder="Fra">
                   <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
                   <mat-datepicker #pickerStart></mat-datepicker>
+                  <mat-datepicker #picker></mat-datepicker>
+                </div> -->
+                <div>
+                  <mat-form-field appearance="fill">
+                    <mat-label>Fra</mat-label>
+                    <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="picker">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                  </mat-form-field>
                 </div>
                 <div>
-                  <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
+                  <!-- <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
                   <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
-                  <mat-datepicker #pickerEnd></mat-datepicker>
+                  <mat-datepicker #pickerEnd></mat-datepicker> -->
+                  <mat-form-field appearance="fill">
+                    <mat-label>Til</mat-label>
+                    <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="picker1">
+                    <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                  </mat-form-field>
                 </div>
               </div>
             </div>
@@ -77,14 +95,34 @@
                       <label style="margin-bottom:0px; margin-top:0.2rem">Filnavn:
                         {{ parse.filename }} ({{ parse.ptype }}) </label>
                       <label style="margin-bottom:0px; margin-top:0.2rem">Uploadet:
-                        {{ parse.oprettet | date:'medium' }}</label>
+                        {{ parse.oprettet | date:'medium' }}</label> 
+                    </div>
+                    <div class="d-flex w-100 justify-content-between" > 
+                      <label>
+                      {{ parse.status }} 
+                    </label>
+                    <label>
+                      {{ parse.antal_fakturaer }} fakturaer
+                    </label>
+
                     </div>
                     <div class="d-flex w-100 justify-content-between">
+                      <div class="d-flex w-100 justify-content-between">
                       <!-- <button type="button" class="btn" (click)="noop()">Betalergrupper</button> -->
-                      <button type="button" class="btn" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
-                      <button type="button" class="btn" (click)="onSelectBetalergrupper(parse)">Betalergrupper</button>
-                      <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button>
-                      <button type="button" class="btn btn-danger" (click)="writeDateOfParse(parse)">Fjern</button>
+                      <button type="button" class="btn" [disabled]="!parse.done" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
+                      <button type="button" class="btn" [disabled]="!parse.done" (click)="onSelectBetalergrupper(parse)">Betalergrupper</button>
+                      <!-- <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button> -->
+                      <button mat-button class="matmenu" [disabled]="!parse.done" [matMenuTriggerFor]="menu">Fejl</button>
+                      <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="downloadFile(parse, 'Mangel')">Mangelliste</button>
+                        <button mat-menu-item (click)="downloadFile(parse, 'Ukendte_analyser')">Ukendte
+                          analysetyper</button>
+                        <button mat-menu-item (click)="downloadFile(parse, 'Analyser_uden_pris')">Analysetyper uden
+                          pris</button>
+                      </mat-menu>
+
+                      <button type="button" class="btn btn-danger" (click)="deleteParsing(parse)">Fjern</button>
+                      </div>
                     </div>
                   </li>
                 </div>
@@ -110,28 +148,27 @@
                 <h3 class="mb-1">{{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
               </div>
               <!-- <div class="container"> -->
-                <div class="row">
-                  <div class="col-md-2">
-                    {{ EnumFakturaStatus }}
-                    <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
+              <div class="row">
+                <div class="col-md-2">
+                  <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
                     class="form-control-sm table-item-width center" #selectedStatus="ngModel">
                     <!-- <option *ngFor="let status of EnumFakturaStatus | keyvalue" [value]="status"> {{status.key}} </option> -->
                     <option [value]="0">Alle</option>
-                    <option [value]="10">Oprettet</option>
+                    <option [value]="10">Usendt</option>
                     <option [value]="20">Sendt</option>
                     <option [value]="30">Slettet</option>
                   </select>
-                  </div>
-                  <div class="col-md-8">
-                    <input [(ngModel)]="fakturaSearchTerm" placeholder="Søg efter faktura" aria-label="Parsing"
+                </div>
+                <div class="col-md-8">
+                  <input [(ngModel)]="fakturaSearchTerm" placeholder="Søg efter faktura" aria-label="Parsing"
                     class="form-control py-2 search-input" name="parsing" />
-                  </div>
+                </div>
                 <!-- </div> -->
               </div>
               <div>
               </div>
             </div>
-  
+
 
             <div class="card-body">
 
@@ -145,6 +182,9 @@
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
                         {{ faktura.rekvirent.shortname }}
                       </label>
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
+                        {{ faktura.samlet_pris | currency:'DKK' }}
+                      </label>
                       <!-- <label style="margin-bottom:0px; margin-top:0.2rem">
                         {{ faktura.analyser.length }} analyser
                       </label> -->
@@ -155,14 +195,15 @@
                           {{ faktura.rekvirent.betalergruppe.navn }} ({{ faktura.rekvirent.betalergruppe.bgtype }})
                         </div>
                       </label>
-                      <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
-                        {{ faktura.samlet_pris | currency:'DKK' }}
+                      <label>
+                        ({{ faktura.antal_analyser }} {{ plural(faktura.antal_analyser, 'analyse') }})
                       </label>
                     </div>
                     <div class="d-flex w-100 justify-left">
-                      <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
+                      <!-- <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
                         {{ faktura.status }}
-                      </label>
+                      </label> -->
+
                     </div>
                     <!-- <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem">Ekstern pris:
@@ -178,9 +219,20 @@
                       <!-- <label *ngIf="pris.duplikat"
                         style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
                       <label *ngIf="!pris.duplikat"></label> -->
-                      <button type="button" class="btn btn-success" (click)="writeIDOfFakt(faktura)">Send</button>
-                      <button type="button" class="btn btn-danger"
-                        (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button>
+                      <button *ngIf="fakturaIsSendable(faktura)" type="button" 
+                        class="btn btn-success" (click)="sendSingleFaktura(faktura)">Send</button>
+                        <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
+                        class="btn btn-warn" (click)="openDebitordialog(faktura.rekvirent)">Mangler debitor</button>
+                      <b>
+                        <div *ngIf="faktura.status==20">
+                          <p style="color:green;">Sendt</p>
+                        </div>
+                        <div *ngIf="faktura.status==30">
+                          <p style="color:red;">Slettet</p>
+                        </div>
+                      </b>
+                      
+                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger" (click)="deleteFaktura(faktura)">Markér som slettet</button>
                     </div>
                   </li>
                 </div>
@@ -204,20 +256,21 @@
           <div class="card list-width">
             <div class="card-header text-white bg-info">
               <div class="card-header-top w-100 justify-content-between center">
-                <h3 class="mb-1">Betalergrupper i {{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
+                <h3 class="mb-1">Betalergrupper i {{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date
+                  }}):</h3>
               </div>
               <!-- <div class="container"> -->
-                <!-- <div class="row"> -->
-                  <div class="col-md-8">
-                    <input [(ngModel)]="betalergrupppeSearchTerm" placeholder="Søg efter betalergruppe" aria-label="Betalergruppe"
-                    class="form-control py-2 search-input" name="betalergruppe" />
-                  </div>
-                <!-- </div> -->
+              <!-- <div class="row"> -->
+              <div class="col-md-8">
+                <input [(ngModel)]="betalergrupppeSearchTerm" placeholder="Søg efter betalergruppe"
+                  aria-label="Betalergruppe" class="form-control py-2 search-input" name="betalergruppe" />
+              </div>
+              <!-- </div> -->
               <!-- </div> -->
               <div>
               </div>
             </div>
-  
+
 
             <div class="card-body">
 
@@ -229,13 +282,20 @@
                   <li class="list-group-item" *ngIf="betalergruppeSatisfiesSearch(bg)">
                     <div class="d-flex w-100 justify-content-between">
                       <label>
-                      {{ bg.navn }}
-                    </label>
-                    <label>{{bg.sum_total | currency:'DKK'}}</label>
+                        {{ bg.navn }}
+                      </label>
+                      <label>{{(bg.sum_unsent ? bg.sum_unsent : 0) | currency:'DKK'}} ({{bg.sum_total | currency:'DKK'}} totalt) </label>
                     </div>
+                    <!-- <div class="d-flex w-100 justify-right">
+                      <label>
+                        ({{ bg.sum_unsent | currency:'DKK' }} usendt)
+                      </label>
+                    </div> -->
                     <div class="d-flex w-100 justify-content-between">
-                      <button type="button" class="btn btn-success" (click)="writeIDOfFakt(bg)">Send alle</button>
-                      <button type="button" class="btn" (click)="onSelectParsesInBetalergruppe(bg)">{{ bg.antal }} fakturaer</button>
+                      <button type="button" [disabled]="bg.antal_unsent == 0" class="btn btn-success" (click)="sendAllFakturasInBGInParse(bg)">Send
+                        alle</button>
+                      <button type="button" class="btn" (click)="onSelectParsesInBetalergruppe(bg)"> 
+                        {{bg.antal_unsent}} {{ plural(bg.antal_unsent,'faktura', 'er') }} ({{ bg.antal }} total) </button>
                       <!-- <label>{{ bg.antal }} fakturaer</label> -->
 
                       <!-- <label *ngIf="pris.duplikat"
@@ -258,7 +318,8 @@
   <!-- Alle fakturaer tilhørende bestemt betalergruppe i ét parse -->
   <div class="center container" *ngIf="view=='faktsInBtlgrpInParse'">
     <div class="row">
-      <button type="button" class="btn" (click)="view='betGrpInParse'; selectedBetalergruppe = undefined">Tilbage</button>
+      <button type="button" class="btn"
+        (click)="view='betGrpInParse'; selectedBetalergruppe = undefined">Tilbage</button>
     </div>
     <div class="row">
       <div class="list-group col-md-10 offset-md-1">
@@ -266,31 +327,32 @@
           <div class="card list-width">
             <div class="card-header text-white bg-info">
               <div class="card-header-top w-100 justify-content-between center">
-                <h3 class="mb-1">Fakturaer til {{ selectedBetalergruppe.navn }} i fil {{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date }}):</h3>
+                <h3 class="mb-1">Fakturaer til {{ selectedBetalergruppe.navn }} i fil {{ selectedParsing.filename }} ({{
+                  selectedParsing.oprettet | date }}):</h3>
               </div>
               <!-- <div class="container"> -->
-                <div class="row">
-                  <div class="col-md-2">
-                    {{ EnumFakturaStatus }}
-                    <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
+              <div class="row">
+                <div class="col-md-2">
+                  {{ EnumFakturaStatus }}
+                  <select [(ngModel)]="status" name="selectedStatus" id="selectedStatus"
                     class="form-control-sm table-item-width center" #selectedStatus="ngModel">
                     <!-- <option *ngFor="let status of EnumFakturaStatus | keyvalue" [value]="status"> {{status.key}} </option> -->
                     <option [value]="0">Alle</option>
-                    <option [value]="10">Oprettet</option>
+                    <option [value]="10">Usendt</option>
                     <option [value]="20">Sendt</option>
                     <option [value]="30">Slettet</option>
                   </select>
-                  </div>
-                  <div class="col-md-8">
-                    <input [(ngModel)]="fakturaSearchTerm" placeholder="Søg efter faktura" aria-label="Faktura"
+                </div>
+                <div class="col-md-8">
+                  <input [(ngModel)]="fakturaSearchTerm" placeholder="Søg efter faktura" aria-label="Faktura"
                     class="form-control py-2 search-input" name="Faktura" />
-                  </div>
+                </div>
                 <!-- </div> -->
               </div>
               <div>
               </div>
             </div>
-  
+
 
             <div class="card-body">
 
@@ -318,9 +380,12 @@
                         {{ faktura.samlet_pris | currency:'DKK' }}
                       </label>
                     </div>
-                    <div class="d-flex w-100 justify-left">
-                      <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
-                        {{ faktura.status }}
+                    <div class="d-flex w-100 justify-content-between">
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Debitor:
+                        {{ faktura.rekvirent.debitor_nr }}
+                      </label>
+                      <label>
+                        ({{faktura.antal_analyser}} {{ plural(faktura.antal_analyser, 'analyse') }})
                       </label>
                     </div>
                     <!-- <div class="d-flex w-100 justify-content-between">
@@ -337,9 +402,22 @@
                       <!-- <label *ngIf="pris.duplikat"
                         style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
                       <label *ngIf="!pris.duplikat"></label> -->
-                      <button type="button" class="btn btn-success" (click)="writeIDOfFakt(faktura)">Send</button>
-                      <button type="button" class="btn btn-danger"
-                        (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button>
+                      <div>
+                      <button *ngIf="fakturaIsSendable(faktura)" type="button" 
+                        class="btn btn-success" (click)="sendSingleFaktura(faktura)">Send</button>
+                      <b>
+                        <div *ngIf="faktura.status==20">
+                          <p style="color:green;">Sendt</p>
+                        </div>
+                        <div *ngIf="faktura.status==30">
+                          <p style="color:red;">Slettet</p>
+                        </div>
+                      </b>
+                      <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
+                        class="btn btn-warn" (click)="openDebitordialog(faktura.rekvirent)">Mangler debitor</button>
+                        </div>
+                      <!-- <button type="button" class="btn btn-danger" (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button> -->
+                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger" (click)="deleteFaktura(faktura)">Markér som slettet</button>
                     </div>
                   </li>
                 </div>
@@ -351,4 +429,7 @@
     </div>
   </div>
 
+</div>
+<div>
+  <toaster-container [toasterconfig]="config"></toaster-container>
 </div>

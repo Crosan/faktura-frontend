@@ -79,6 +79,7 @@ import { PriceComponent } from './price/price.component';
 import { PriceService } from './common/services/price.service';
 import { AnalysePrisService } from './common/services/analyse-pris.service';
 import { AnalyseTypeService } from './common/services/analyse-type.service';
+import { DebitorService } from './common/services/debitor.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DownloadService } from './common/services/download.service';
 import { FakturaPdfComponent } from './common/component/faktura-pdf/faktura-pdf.component';
@@ -88,7 +89,8 @@ import { SendService } from './common/services/send.service';
 import { ParsingComponent } from './parsing/parsing.component';
 import { RekvirentComponent } from './rekvirenter/rekvirenter.component';
 import { LayoutModule } from '@angular/cdk/layout';
-import { EANdialogComponent } from './rekvirenter/EANdialog/EANdialog.component';
+import { DebitorDialogComponent } from './rekvirenter/DebitorDialog/DebitorDialog.component';
+import { BetalergruppedialogComponent } from './rekvirenter/betalergruppedialog/betalergruppedialog.component';
 import { MatNativeDateModule } from '@angular/material/core';
 // import { EANdialogComponent } from './rekvirenter/EANdialog/EANdialog.component'
 
@@ -143,9 +145,10 @@ const routes: Routes = [
     FakturaPdfComponent,
     ParsingComponent,
     RekvirentComponent,
-    EANdialogComponent,
+    DebitorDialogComponent,
+    BetalergruppedialogComponent,
   ],
-  entryComponents: [EANdialogComponent],//,MatSnackBarContainer],
+  entryComponents: [DebitorDialogComponent],//,MatSnackBarContainer],
   imports: [
     BrowserModule,
     FormsModule,
@@ -162,6 +165,7 @@ const routes: Routes = [
     MatDatepickerModule,
     MatAutocompleteModule,
     MatExpansionModule,
+    MatMenuModule,
     // MatDialogModule,
     MatButtonModule,
     MatTabsModule,
@@ -194,6 +198,7 @@ const routes: Routes = [
     SendService, 
     AnalyseTypeService,
     DownloadService,
+    DebitorService,
   ],
   bootstrap: [AppComponent]
 })

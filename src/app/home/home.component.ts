@@ -86,14 +86,14 @@ export class HomeComponent {
         //   this.callCreatePDF(0, parsing);
         // }, 2000);
 
-        this.toasterService.pop('success', 'Success', 'Fakturaerne blev oprettet');
+        this.toasterService.pop('success', 'Success', 'Filen blev uploadet');
         this.spinner.hide();
       },
         (error: AppError) => {
           this.uploadDisabled = false;
           this.spinner.hide();
 
-          this.toasterService.pop('failure', 'Fakturaerne blev ikke oprettet');
+          this.toasterService.pop('failure', 'Filen blev ikke uploadet');
           console.log(error)
         }
       );
