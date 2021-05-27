@@ -1,24 +1,8 @@
-<!-- <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
-  <p style="font-size: 20px; color: white">{{spinnerText}}</p>
-</ngx-spinner> -->
-
 <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
-  <p style="font-size: 20px; color: white">Sender fakturaer...</p>
+  <p style="font-size: 20px; color: white"> {{ spinnertext }} </p>
 </ngx-spinner>
 
 <div class="container">
-  <!-- <div class="row">
-    View:
-    <select [(ngModel)]="view" name="selectedView" id="selectedView" class="form-control-sm table-item-width center"
-      #selectedview="ngModel">
-      <option *ngFor="let view of views" [value]="view"> {{view}} </option>
-    </select>
-    {{ testtext }}
-    <button type="button" class="btn" (click)="noop()">Test</button>
-
-  </div> -->
-
-
   <div class="center container" *ngIf="view == 'faktsInParse' || view == 'betGrpInParse'">
     <div class="row">
       <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
@@ -43,51 +27,29 @@
               </div>
               <br>
               <div class="d-flex w-100 justify-content-between">
-                <!-- <mat-date-range-input [rangePicker]="picker">
-                  <input matStartDate placeholder="Start date"><br>
-                  <input matEndDate placeholder="End date">
-                </mat-date-range-input>
-                
-                <mat-date-range-picker #picker></mat-date-range-picker> -->
                 <select [(ngModel)]="parsetypeToShow" name="parsetypeToShow" id="parsetypeToShow"
                   class="form-control-sm table-item-width center" #selectedview="ngModel">
                   <option *ngFor="let parsetype of parsetypes" [value]="parsetype"> {{parsetype}} </option>
                 </select>
 
-                <!-- <div>
-                  <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="pickerStart" placeholder="Fra">
-                  <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
-                  <mat-datepicker #pickerStart></mat-datepicker>
+                <mat-form-field appearance="fill">
+                  <mat-label>Fra</mat-label>
+                  <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="picker">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
-                </div> -->
-                <div>
-                  <mat-form-field appearance="fill">
-                    <mat-label>Fra</mat-label>
-                    <input [(ngModel)]="parsingStartDate" matInput [matDatepicker]="picker">
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-datepicker #picker></mat-datepicker>
-                  </mat-form-field>
-                </div>
-                <div>
-                  <!-- <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="pickerEnd" placeholder="Til">
-                  <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
-                  <mat-datepicker #pickerEnd></mat-datepicker> -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Til</mat-label>
-                    <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="picker1">
-                    <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
-                    <mat-datepicker #picker1></mat-datepicker>
-                  </mat-form-field>
-                </div>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Til</mat-label>
+                  <input [(ngModel)]="parsingEndDate" matInput [matDatepicker]="picker1">
+                  <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                  <mat-datepicker #picker1></mat-datepicker>
+                </mat-form-field>
               </div>
             </div>
 
 
             <div class="card-body">
-
-              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
-                priser</button> -->
-
               <ul class="list-group">
                 <div *ngFor="let parse of allParses; let i = index">
                   <li class="list-group-item" *ngIf="parseSatisfiesSearch(parse)">
@@ -95,35 +57,36 @@
                       <label style="margin-bottom:0px; margin-top:0.2rem">Filnavn:
                         {{ parse.filename }} ({{ parse.ptype }}) </label>
                       <label style="margin-bottom:0px; margin-top:0.2rem">Uploadet:
-                        {{ parse.oprettet | date:'medium' }}</label> 
-                    </div>
-                    <div class="d-flex w-100 justify-content-between" > 
-                      <label>
-                      {{ parse.status }} 
-                    </label>
-                    <label>
-                      {{ parse.antal_fakturaer }} fakturaer
-                    </label>
-
+                        {{ parse.oprettet | date:'medium' }}</label>
                     </div>
                     <div class="d-flex w-100 justify-content-between">
-                      <div class="d-flex w-100 justify-content-between">
-                      <!-- <button type="button" class="btn" (click)="noop()">Betalergrupper</button> -->
-                      <button type="button" class="btn" [disabled]="!parse.done" (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
-                      <button type="button" class="btn" [disabled]="!parse.done" (click)="onSelectBetalergrupper(parse)">Betalergrupper</button>
-                      <!-- <button type="button" class="btn" (click)="downloadMangelliste(parse)">Mangelliste</button> -->
-                      <button mat-button class="matmenu" [disabled]="!parse.done" [matMenuTriggerFor]="menu">Fejl</button>
-                      <mat-menu #menu="matMenu">
-                        <button mat-menu-item (click)="downloadFile(parse, 'Mangel')">Mangelliste</button>
-                        <button mat-menu-item (click)="downloadFile(parse, 'Ukendte_analyser')">Ukendte
-                          analysetyper</button>
-                        <button mat-menu-item (click)="downloadFile(parse, 'Analyser_uden_pris')">Analysetyper uden
-                          pris</button>
-                      </mat-menu>
+                      <label>
+                        {{ parse.status }}
+                      </label>
+                      <label>
+                        {{ parse.antal_fakturaer }} fakturaer, {{ parse.samlet_pris | currency:'DKK':'symbol':'3.0'}}
+                      </label>
 
-                      <button type="button" class="btn btn-danger" (click)="deleteParsing(parse)">Fjern</button>
-                      </div>
                     </div>
+                      <div class="d-flex w-100 justify-content-between">
+
+                        <button type="button" class="btn" [disabled]="!parse.done"
+                          (click)="onSelectAlleFakturaer(parse)">Alle fakturaer</button>
+
+                        <button type="button" class="btn" [disabled]="!parse.done"
+                          (click)="onSelectBetalergrupper(parse)">Betalergrupper</button>
+
+                        <button mat-button class="matmenu" [disabled]="!parse.done" [matMenuTriggerFor]="menu">Fejl</button>
+
+                        <mat-menu #menu="matMenu">
+                          <button mat-menu-item (click)="downloadFile(parse, 'Mangel')">Mangelliste</button>
+                          <button mat-menu-item (click)="downloadFile(parse, 'Ukendte_analyser')">Ukendte analysetyper</button>
+                          <button mat-menu-item (click)="downloadFile(parse, 'Analyser_uden_pris')">Analysetyper uden pris</button>
+                          <!-- <button mat-menu-item (click)="updateParsing(parse)">Kør mangelliste igen</button> -->
+                        </mat-menu>
+
+                        <button type="button" class="btn btn-danger" (click)="deleteParsing(parse)">Fjern</button>
+                      </div>
                   </li>
                 </div>
               </ul>
@@ -136,9 +99,6 @@
 
   <!-- Alle fakturaer i ét parse -->
   <div class="center container" *ngIf="view=='faktsInParse'">
-    <!-- <div class="row">
-      <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
-    </div> -->
     <div class="row">
       <div class="list-group col-md-10 offset-md-1">
         <div class="row align-items-center justify-content-center">
@@ -171,10 +131,6 @@
 
 
             <div class="card-body">
-
-              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
-                priser</button> -->
-
               <ul class="list-group">
                 <div *ngFor="let faktura of selectedFakturaer; let i = index">
                   <li class="list-group-item" *ngIf="fakturaSatisfiesSearch(faktura)">
@@ -183,11 +139,8 @@
                         {{ faktura.rekvirent.shortname }}
                       </label>
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
-                        {{ faktura.samlet_pris | currency:'DKK' }}
+                        {{ faktura.samlet_pris | currency:'DKK':'symbol':'3.0' }}
                       </label>
-                      <!-- <label style="margin-bottom:0px; margin-top:0.2rem">
-                        {{ faktura.analyser.length }} analyser
-                      </label> -->
                     </div>
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Betalergruppe:
@@ -195,33 +148,15 @@
                           {{ faktura.rekvirent.betalergruppe.navn }} ({{ faktura.rekvirent.betalergruppe.bgtype }})
                         </div>
                       </label>
-                      <label>
+                      <label (click)="openStatisticsdialog(faktura)">
                         ({{ faktura.antal_analyser }} {{ plural(faktura.antal_analyser, 'analyse') }})
                       </label>
                     </div>
-                    <div class="d-flex w-100 justify-left">
-                      <!-- <label style="margin-bottom:0px; margin-top:0.2rem"> Status:
-                        {{ faktura.status }}
-                      </label> -->
-
-                    </div>
-                    <!-- <div class="d-flex w-100 justify-content-between">
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Ekstern pris:
-                        {{pris.ekstern_pris}}</label>
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Gyldig til:
-                        {{pris.gyldig_til | date}}</label>
-                    </div> -->
-                    <!-- <div class="d-flex w-100 justify-content-between">
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Analysetype:
-                        {{pris.analyse_type.ydelses_kode}}</label>
-                    </div> -->
+                    
                     <div class="d-flex w-100 justify-content-between">
-                      <!-- <label *ngIf="pris.duplikat"
-                        style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
-                      <label *ngIf="!pris.duplikat"></label> -->
-                      <button *ngIf="fakturaIsSendable(faktura)" type="button" 
-                        class="btn btn-success" (click)="sendSingleFaktura(faktura)">Send</button>
-                        <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
+                      <button *ngIf="fakturaIsSendable(faktura)" type="button" class="btn btn-success"
+                        (click)="sendSingleFaktura(faktura)">Send</button>
+                      <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
                         class="btn btn-warn" (click)="openDebitordialog(faktura.rekvirent)">Mangler debitor</button>
                       <b>
                         <div *ngIf="faktura.status==20">
@@ -231,8 +166,11 @@
                           <p style="color:red;">Slettet</p>
                         </div>
                       </b>
-                      
-                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger" (click)="deleteFaktura(faktura)">Markér som slettet</button>
+
+                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger"
+                        (click)="deleteFaktura(faktura)">Markér som slettet</button>
+                      <button *ngIf="faktura.status==30" type="button" class="btn"
+                        (click)="unDeleteFaktura(faktura)">Markér som uslettet</button>
                     </div>
                   </li>
                 </div>
@@ -247,9 +185,6 @@
 
   <!-- Betalergruppe oversigt i single parse -->
   <div class="center container" *ngIf="view=='betGrpInParse'">
-    <!-- <div class="row">
-      <button type="button" class="btn" (click)="view='parses'; selectedParsing = undefined">Tilbage</button>
-    </div> -->
     <div class="row">
       <div class="list-group col-md-10 offset-md-1">
         <div class="row align-items-center justify-content-center">
@@ -259,24 +194,16 @@
                 <h3 class="mb-1">Betalergrupper i {{ selectedParsing.filename }} ({{ selectedParsing.oprettet | date
                   }}):</h3>
               </div>
-              <!-- <div class="container"> -->
-              <!-- <div class="row"> -->
-              <div class="col-md-8">
+              <div>
                 <input [(ngModel)]="betalergrupppeSearchTerm" placeholder="Søg efter betalergruppe"
                   aria-label="Betalergruppe" class="form-control py-2 search-input" name="betalergruppe" />
               </div>
-              <!-- </div> -->
-              <!-- </div> -->
               <div>
               </div>
             </div>
 
 
             <div class="card-body">
-
-              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
-                priser</button> -->
-
               <ul class="list-group">
                 <div *ngFor="let bg of selectedBetalergrupper; let i = index">
                   <li class="list-group-item" *ngIf="betalergruppeSatisfiesSearch(bg)">
@@ -284,26 +211,16 @@
                       <label>
                         {{ bg.navn }}
                       </label>
-                      <label>{{(bg.sum_unsent ? bg.sum_unsent : 0) | currency:'DKK'}} ({{bg.sum_total | currency:'DKK'}} totalt) </label>
+                      <label>{{(bg.sum_unsent ? bg.sum_unsent : 0) | currency:'DKK':'symbol':'3.0'}} ({{bg.sum_total |
+                        currency:'DKK':'symbol':'3.0'}} totalt) </label>
                     </div>
-                    <!-- <div class="d-flex w-100 justify-right">
-                      <label>
-                        ({{ bg.sum_unsent | currency:'DKK' }} usendt)
-                      </label>
-                    </div> -->
                     <div class="d-flex w-100 justify-content-between">
-                      <button type="button" [disabled]="bg.antal_unsent == 0" class="btn btn-success" (click)="sendAllFakturasInBGInParse(bg)">Send
+                      <button type="button" [disabled]="bg.antal_unsent == 0" class="btn btn-success"
+                        (click)="sendAllFakturasInBGInParse(bg)">Send
                         alle</button>
-                      <button type="button" class="btn" (click)="onSelectParsesInBetalergruppe(bg)"> 
-                        {{bg.antal_unsent}} {{ plural(bg.antal_unsent,'faktura', 'er') }} ({{ bg.antal }} total) </button>
-                      <!-- <label>{{ bg.antal }} fakturaer</label> -->
-
-                      <!-- <label *ngIf="pris.duplikat"
-                        style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
-                      <label *ngIf="!pris.duplikat"></label> -->
-                      <!-- <button type="button" class="btn btn-success" (click)="writeIDOfFakt(faktura)">Send</button>
-                      <button type="button" class="btn btn-danger"
-                        (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button> -->
+                      <button type="button" class="btn" (click)="onSelectFaktsInBetalergruppe(bg)">
+                        {{bg.antal_unsent}} {{ plural(bg.antal_unsent,'faktura', 'er') }} ({{ bg.antal }} total)
+                      </button>
                     </div>
                   </li>
                 </div>
@@ -355,10 +272,6 @@
 
 
             <div class="card-body">
-
-              <!-- <button type="button" class="center margin-bottom btn btn-success" (click)="submitPrices()">Opret nye
-                priser</button> -->
-
               <ul class="list-group">
                 <div *ngFor="let faktura of selectedFakturaer; let i = index">
                   <li class="list-group-item" *ngIf="fakturaSatisfiesSearch(faktura)">
@@ -366,9 +279,9 @@
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Rekvirent:
                         {{ faktura.rekvirent.shortname }} ({{ faktura.rekvirent.rekv_nr }})
                       </label>
-                      <!-- <label style="margin-bottom:0px; margin-top:0.2rem">
-                        {{ faktura.analyser.length }} analyser
-                      </label> -->
+                      <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
+                        {{ faktura.samlet_pris | currency:'DKK':'symbol':'3.0' }}
+                      </label>
                     </div>
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Betalergruppe:
@@ -376,48 +289,34 @@
                           {{ faktura.rekvirent.betalergruppe.navn }} ({{ faktura.rekvirent.betalergruppe.bgtype }})
                         </div>
                       </label>
-                      <label style="margin-bottom:0px; margin-top:0.2rem"> Samlet pris:
-                        {{ faktura.samlet_pris | currency:'DKK' }}
+                      <label (click)="openStatisticsdialog(faktura)" style="margin-bottom:0px; margin-top:0.2rem">
+                        Statistik ({{faktura.antal_analyser}} {{ plural(faktura.antal_analyser, 'analyse') }})
                       </label>
                     </div>
                     <div class="d-flex w-100 justify-content-between">
                       <label style="margin-bottom:0px; margin-top:0.2rem"> Debitor:
                         {{ faktura.rekvirent.debitor_nr }}
                       </label>
-                      <label>
-                        ({{faktura.antal_analyser}} {{ plural(faktura.antal_analyser, 'analyse') }})
-                      </label>
+
                     </div>
-                    <!-- <div class="d-flex w-100 justify-content-between">
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Ekstern pris:
-                        {{pris.ekstern_pris}}</label>
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Gyldig til:
-                        {{pris.gyldig_til | date}}</label>
-                    </div> -->
-                    <!-- <div class="d-flex w-100 justify-content-between">
-                      <label style="margin-bottom:0px; margin-top:0.2rem">Analysetype:
-                        {{pris.analyse_type.ydelses_kode}}</label>
-                    </div> -->
                     <div class="d-flex w-100 justify-content-between">
-                      <!-- <label *ngIf="pris.duplikat"
-                        style="margin-bottom:0px; margin-top:0.2rem; color:red">DUPLIKAT</label>
-                      <label *ngIf="!pris.duplikat"></label> -->
                       <div>
-                      <button *ngIf="fakturaIsSendable(faktura)" type="button" 
-                        class="btn btn-success" (click)="sendSingleFaktura(faktura)">Send</button>
-                      <b>
-                        <div *ngIf="faktura.status==20">
-                          <p style="color:green;">Sendt</p>
-                        </div>
-                        <div *ngIf="faktura.status==30">
-                          <p style="color:red;">Slettet</p>
-                        </div>
-                      </b>
-                      <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
-                        class="btn btn-warn" (click)="openDebitordialog(faktura.rekvirent)">Mangler debitor</button>
-                        </div>
+                        <button *ngIf="fakturaIsSendable(faktura)" type="button" class="btn btn-success"
+                          (click)="sendSingleFaktura(faktura)">Send</button>
+                        <b>
+                          <div *ngIf="faktura.status==20">
+                            <p style="color:green;">Sendt</p>
+                          </div>
+                          <div *ngIf="faktura.status==30">
+                            <p style="color:red;">Slettet</p>
+                          </div>
+                        </b>
+                        <button *ngIf="(!faktura.rekvirent.debitor_nr) && (faktura.status==10)" type="button"
+                          class="btn btn-warn" (click)="openDebitordialog(faktura.rekvirent)">Mangler debitor</button>
+                      </div>
                       <!-- <button type="button" class="btn btn-danger" (click)="writeBG(faktura.rekvirent.betalergruppe)">Slet</button> -->
-                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger" (click)="deleteFaktura(faktura)">Markér som slettet</button>
+                      <button *ngIf="faktura.status==10" type="button" class="btn btn-danger"
+                        (click)="deleteFaktura(faktura)">Markér som slettet</button>
                     </div>
                   </li>
                 </div>

@@ -91,6 +91,7 @@ import { RekvirentComponent } from './rekvirenter/rekvirenter.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { DebitorDialogComponent } from './rekvirenter/DebitorDialog/DebitorDialog.component';
 import { BetalergruppedialogComponent } from './rekvirenter/betalergruppedialog/betalergruppedialog.component';
+import { StatistikdialogComponent } from './parsing/statistikdialog/statistikdialog.component'
 import { MatNativeDateModule } from '@angular/material/core';
 // import { EANdialogComponent } from './rekvirenter/EANdialog/EANdialog.component'
 
@@ -147,6 +148,7 @@ const routes: Routes = [
     RekvirentComponent,
     DebitorDialogComponent,
     BetalergruppedialogComponent,
+    StatistikdialogComponent,
   ],
   entryComponents: [DebitorDialogComponent],//,MatSnackBarContainer],
   imports: [

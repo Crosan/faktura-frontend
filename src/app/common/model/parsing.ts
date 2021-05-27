@@ -19,6 +19,7 @@ export class Parsing {
     ptype: string
     status: string
     antal_fakturaer: number
+    samlet_pris: number
     // filename: string
 
     @Type(() => Faktura)
@@ -34,6 +35,7 @@ export class Parsing {
             ptype: this.ptype,
             status: this.status,
             done: this.done,
+            samlet_pris: this.samlet_pris,
             antal_fakturaer: this.antal_fakturaer,
             // oprettet_af: this.oprettet_af.id,
             fakturaer: []

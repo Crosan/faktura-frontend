@@ -21,6 +21,7 @@ import { DebitorDialogComponent, DebitorDialogData } from './DebitorDialog/Debit
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { BetalergruppedialogComponent } from './betalergruppedialog/betalergruppedialog.component';
 import { DebitorService } from '../common/services/debitor.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 // import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
 
@@ -39,6 +40,7 @@ export class RekvirentComponent implements OnInit {
     private betalergruppeService: BetalergruppeService,
     private debitorService: DebitorService,
     public dialog: MatDialog,
+    private spinner: NgxSpinnerService,
     private downloadService: DownloadService) { }
 
 
@@ -61,9 +63,9 @@ export class RekvirentComponent implements OnInit {
   betalergrupper: Betalergruppe[];
   searchTerm: string = "";
 
+  spinnertext: string = 'Henter rekvirenter';
+
   ngOnInit() {
-    // this.spinner.show();
-    // this.getParses();
     this.getData();
     this.getBetalergrupper();
   } 
@@ -73,13 +75,15 @@ export class RekvirentComponent implements OnInit {
    * Gets and filters rekvirent-objects
    */
   getData() {
+    this.spinner.show()
     this.rekvirentService.getAll(false, true).subscribe(allrekvirenter => {
       this.rekvirenter = allrekvirenter;
       this.filteredRekvirenter = this.rekvirentControl.valueChanges.pipe(startWith(""), map((a) => (a ? this._filterAnalyser(a) : this.rekvirenter)));
+      this.spinner.hide()
     });
     
-    this.rekvirentControl.disable();
-    this.rekvirentControl.enable();
+    // this.rekvirentControl.disable();
+    // this.rekvirentControl.enable();
     // this.rekvirentControl.setValue.;
   }
 
@@ -87,20 +91,6 @@ export class RekvirentComponent implements OnInit {
     this.betalergruppeService.getAll(false, false).subscribe(allBGs => this.betalergrupper = allBGs)
   };
 
-
-  // openDialog(rekvirent: Rekvirent): void {
-  //   const dialogRef = this.dialog.open(EANdialog, {
-  //     height: '400px',
-  //     width: '250px',
-  //     // data: {name: this.name, animal: this.animal}
-  //     data: {rekvirentName: rekvirent.shortname}
-  //   });
-
-  //   dialogRef.afterClosed().subscribe(result => {
-  //     console.log('The dialog was closed');
-  //     this.selectedEAN = result;
-  //   });
-  // }
 
   openEANdialog(rekvirent: Rekvirent): void {
     let params = new Map();
@@ -163,41 +153,7 @@ export class RekvirentComponent implements OnInit {
         (a.betalergruppe && (a.betalergruppe.navn.toLowerCase().includes(filterValue))) ||
         (a.rekv_nr       && (a.rekv_nr.toString().toLowerCase().includes(filterValue)) )
 
-        // (a.betalergruppe.navn.toLowerCase().indexOf(filterValue) !== 1) ||
-        // (a.rekv_nr.toString().toLowerCase().indexOf(filterValue) !== 1)
-
-
-        // a.undersogelse.glas_Nr.toString().toLowerCase().indexOf(filterValue) !==
-        // -1 ||
-        // (a.pool_nummer &&
-        //   a.pool_nummer.toString().toLowerCase().indexOf(filterValue) !== -1) ||
-        // a.undersogelse.rekvisitioner[
-        //   a.undersogelse.rekvisitioner.length - 1
-        // ].patient.CPR.toString()
-        //   .toLowerCase()
-        //   .indexOf(filterValue) !== -1 ||
-        // a.status === EnumAnalyseStatus.afvist ||
-        // (a.status === EnumAnalyseStatus.data_analysis_done &&
-        //   a.pakke.kort_navn.toString().toLowerCase().indexOf(filterValue) !==
-        //   -1)
     );
   }
 }
 
-
-// @Component({
-//   selector: 'app-parsing',
-//   templateUrl: './EANdialog/EANdialog.component.html',
-//   styleUrls: ['./rekvirenter.component.css']
-// })
-// export class EANdialog {
-
-//   constructor(
-//     public dialogRef: MatDialogRef<EANdialog>,
-//     @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
-
-//   onNoClick(): void {
-//     this.dialogRef.close();
-//   }
-
-// }

@@ -1,17 +1,18 @@
 <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
   <p style="font-size: 20px; color: white">Arbejder...</p>
+  <img id="scrooge" src="assets/scrooge.gif" style="width:400px;height:289px;" alt="Moneys">
 </ngx-spinner>
 
 <div class="container">
   <div class="row">
 
     <div class="col-md-3 center">
-      <h5 style="margin-top:1rem" class="card-title">Templates:</h5>
+      <!-- <h5 style="margin-top:1rem" class="card-title">Templates:</h5> -->
 
-      <select [(ngModel)]="template" name="selectedTemplate" id="selectedTemplate"
+      <!-- <select [(ngModel)]="template" name="selectedTemplate" id="selectedTemplate"
         class="form-control-sm table-item-width center" #selectedTemplate="ngModel">
         <option *ngFor="let template of templates" [value]="template"> {{template}} </option>
-      </select>
+      </select> -->
 
       <div>
         <button style="margin-top:1rem" class="btn btn-primary" (click)="downloadTemplate()">Hent template</button>
@@ -105,19 +106,19 @@
                 <li class="list-group-item">
                   <div class="d-flex w-100 justify-content-between">
                     <label style="margin-bottom:0px; margin-top:0.2rem">Intern pris:
-                      {{pris.intern_pris}}</label>
+                      {{pris.intern_pris | currency:'DKK'}}</label>
                     <label style="margin-bottom:0px; margin-top:0.2rem">Gyldig fra:
                       {{pris.gyldig_fra | date}}</label>
                   </div>
                   <div class="d-flex w-100 justify-content-between">
                     <label style="margin-bottom:0px; margin-top:0.2rem">Ekstern pris:
-                      {{pris.ekstern_pris}}</label>
+                      {{pris.ekstern_pris | currency:'DKK'}}</label>
                     <label style="margin-bottom:0px; margin-top:0.2rem">Gyldig til:
                       {{pris.gyldig_til | date}}</label>
                   </div>
                   <div class="d-flex w-100 justify-content-between">
-                    <label style="margin-bottom:0px; margin-top:0.2rem">Analysetype:
-                      {{pris.analyse_type.ydelses_kode}}</label>
+                    <label style="margin-bottom:0px; margin-top:0.2rem">Analyse:
+                      {{ pris.analyse_type.ydelses_navn }} ({{pris.analyse_type.ydelses_kode}})</label>
                   </div>
                   <div class="d-flex w-100 justify-content-between">
                     <label *ngIf="pris.duplikat"

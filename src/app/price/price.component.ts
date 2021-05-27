@@ -51,12 +51,13 @@ export class PriceComponent implements OnInit {
     private spinner: NgxSpinnerService) { }
 
   /**
- * Downloads the file attached to the faktura object from the database
+ * Downloads the price template file
  */
   downloadTemplate() {
     let popup = window.open('', '_blank');
 
-    let path = "templates/" + this.template + "_template.xlsx";
+    // let path = "templates/" + this.template + "_template.xlsx";
+    let path = "templates/analysepriser_template.xlsx"
 
     this.downloadService.download(path).
       subscribe(file => {

@@ -19,6 +19,7 @@ export class Faktura {
     parsing: number
     rekvirent: Rekvirent
     antal_analyser: number
+    cpr: number
 
     analyser: Analyse[]
 
@@ -34,6 +35,7 @@ export class Faktura {
             parsing: this.parsing,
             rekvirent: this.rekvirent.id,
             antal_analyser: this.antal_analyser,
+            cpr : this.cpr,
             analyser: []
         }
 

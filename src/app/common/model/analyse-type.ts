@@ -14,6 +14,8 @@ export class AnalyseType {
     afdeling: string
     type: string
     kilde_navn: string
+    antal: number
+    pris: number
     duplikat: boolean
 
     priser: AnalysePris[]
@@ -36,7 +38,9 @@ export class AnalyseType {
             afdeling: this.afdeling,
             type: this.type,
             kilde_navn: this.kilde_navn,
-            priser: flatPriser
+            priser: flatPriser,
+            antal: this.antal,
+            pris: this.pris
         }
 
         return return_obj;

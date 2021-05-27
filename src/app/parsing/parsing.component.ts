@@ -25,6 +25,9 @@ import { DebitorService } from '../common/services/debitor.service';
 import { MatDialog } from '@angular/material/dialog';
 import { RekvirentService } from '../common/services/rekvirent.service';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { AnalyseTypeService } from '../common/services/analyse-type.service';
+import { StatistikdialogComponent, statistikdialogData} from './statistikdialog/statistikdialog.component'
+
 
 @Component({
   selector: 'app-parsing',
@@ -46,13 +49,14 @@ export class ParsingComponent implements OnInit {
     private sendService: SendService,
     private debitorService: DebitorService,
     private rekvirentService: RekvirentService,
+    private analyseTypeService: AnalyseTypeService,
     private spinner: NgxSpinnerService,
     public dialog: MatDialog,
     private downloadService: DownloadService) { }
 
   ngOnInit() {
-    // this.spinner.show();
     this.getParses();
+    // this.spinner.hide()
   }
 
   /**
@@ -71,9 +75,9 @@ export class ParsingComponent implements OnInit {
   view: string = "parses";
   views: string[] = ["parses", "betGrpInParse", "faktsInParse", "faktsInBtlgrpInParse"]
 
-  // status: string = "Alle";
+  spinnertext: string;
+
   status: number = 0;
-  // statuses: string[] = ["Alle", "Usendte", "Sendte", "Slettede"];
 
   parsetypes: string[] = ["Alle", "Labka", "Blodbank"];
   parsetypeToShow: string = "Alle";
@@ -94,18 +98,17 @@ export class ParsingComponent implements OnInit {
   fakturaSearchTerm: string = "";
   betalergrupppeSearchTerm: string = "";
 
-  // selectedParsingId: number;
 
   /**
    * Returns the creation date of the parsing formatted as 'yyyyMMddHHmmss' in Danish locale.
    */
-  timeFormat(parse: Parsing): string {
-    // let ourTime = parse.oprettet.toDateString()
-    let retval = formatDate(parse.oprettet, 'yyyyMMddHHmmss', 'DA-DK');
-    // let retval = String(parse.oprettet.getFullYear()) + String(parse.oprettet.getMonth()) + String(parse.oprettet.getDate()) + String(parse.oprettet.getHours()) + String(parse.oprettet.getMinutes()) + String(parse.oprettet.getSeconds());    console.log(retval);
-    console.log(retval);
-    return retval
-  }
+  // timeFormat(parse: Parsing): string {
+  //   // let ourTime = parse.oprettet.toDateString()
+  //   let retval = formatDate(parse.oprettet, 'yyyyMMddHHmmss', 'DA-DK');
+  //   // let retval = String(parse.oprettet.getFullYear()) + String(parse.oprettet.getMonth()) + String(parse.oprettet.getDate()) + String(parse.oprettet.getHours()) + String(parse.oprettet.getMinutes()) + String(parse.oprettet.getSeconds());    console.log(retval);
+  //   console.log(retval);
+  //   return retval
+  // }
 
   /**
    * Conjugates the noun in either plural or singular 
@@ -114,7 +117,6 @@ export class ParsingComponent implements OnInit {
    * @param suffix 
    */
   plural(count, noun, suffix = 'r'): string {
-    // return `${count} ${noun}${count !== 1 ? suffix : ''}`;
     return `${noun}${count !== 1 ? suffix : ''}`;
   }
 
@@ -158,15 +160,36 @@ export class ParsingComponent implements OnInit {
           this.rekvirentService.update(rekvirent_form, false).subscribe(response => {
             rekvirent.debitor_nr = data.response
           });
-          // TODO: fjern rekvirent fra listen eller markér som gjort
         }
       })
     })
       // let observables: Observable<void>[] = [];}
   }
 
-  // sendButtonTooltips: string[] = ["Send", "Rekvirent mangler debitor-nr", "Faktura er allerede sendt eller slettet", "Der er ingen analyser i fakturaen"];
+  /**
+   * Fetches statistics on the parameter faktura and opens the statistics dialogue
+   * @param faktura 
+   */
+  openStatisticsdialog(faktura: Faktura): void {
+    // console.log(faktura);
+    let params = new Map();
+    params.set('faktura', faktura.id);
+    this.analyseTypeService.getAll(false, false, params).subscribe( analysetypes => {
+      let dialogData = {
+        rekvirentName: faktura.rekvirent.shortname,
+        analysetyper: analysetypes,
+        analyser: faktura.antal_analyser,
+        cpr_numre: faktura.cpr,
+      };
+      this.dialog.open(StatistikdialogComponent, {height: '400px', width: '500px', data: dialogData})
+    })
+  }
 
+
+  /**
+   * Deletes the parsing from the database and removes it from the local list
+   * @param parse The parsing object to delete
+   */
   deleteParsing(parse: Parsing): void {
       if(confirm("Er du sikker? Dette kan ikke omgøres.")) {
         this.parsingService.delete(parse.id).subscribe( response => {
@@ -175,35 +198,64 @@ export class ParsingComponent implements OnInit {
       }
   }
 
+  /**
+   * Sets the faktura status to 30 (slettet) in the database and on the local object
+   * @param faktura 
+   */
   deleteFaktura(faktura: Faktura): void{
     let faktura_form = new FormData();
     faktura_form.append("id", faktura.id.toString());
     faktura_form.append("status", '30');
     faktura_form.append("parsing", faktura.parsing.toString());
-    // console.log(faktura_form);
-    // console.log(faktura_form.get('status'));
     this.fakturaService.update(faktura_form, false).subscribe(response => {
       faktura.status = 30;
-      this.selectedBetalergruppe.antal_unsent -= 1;
-      this.selectedBetalergruppe.sum_unsent -= faktura.samlet_pris;
-      // console.log(response)
-      // let status_form = new FormData();
-      // status_form.append('faktura', faktura.id.toString());
-      // status_form.append('status', '30');
-      // this.fakturaStatusService.create(status_form, false).subscribe()
+      if (this.view == 'faktsInBtlgrpInParse') {
+        this.selectedBetalergruppe.antal_unsent -= 1;
+        this.selectedBetalergruppe.sum_unsent -= faktura.samlet_pris;
+      }
     });
-    // this.fakturaStatusService.create()
   }
 
+  /**
+   * Sets the faktura status to 10 (oprettet) in the database and on the local object
+   * @param faktura 
+   */
+  unDeleteFaktura(faktura: Faktura): void{
+    let faktura_form = new FormData();
+    faktura_form.append("id", faktura.id.toString());
+    faktura_form.append("status", '10');
+    faktura_form.append("parsing", faktura.parsing.toString());
+    this.fakturaService.update(faktura_form, false).subscribe(response => {
+      faktura.status = 10;
+      if (this.view == 'faktsInBtlgrpInParse') {
+        this.selectedBetalergruppe.antal_unsent += 1;
+        this.selectedBetalergruppe.sum_unsent += faktura.samlet_pris;
+      }
+    });
+  }
+
+  /**
+   * Wraps the faktura ID in a list, and calls the API for sending the faktura.
+   * @param fakt 
+   */
   sendSingleFaktura(fakt: Faktura): void {
     this.sendService.newSend([fakt]).subscribe();
     if (this.selectedBetalergruppe) {
-      this.selectedBetalergruppe.sum_unsent -= fakt.samlet_pris;
-      this.selectedBetalergruppe.antal_unsent -= 1;
+      if (this.view == 'faktsInBtlgrpInParse') {
+        this.selectedBetalergruppe.sum_unsent -= fakt.samlet_pris;
+        this.selectedBetalergruppe.antal_unsent -= 1;
+      }
     }
   }
 
+  /**
+   * Fetches all the unsent and non-deleted fakturas in the current parsing, belonging
+   * to the parameter betalergruppe and calls the API for sending them.
+   * Updates local faktura objects for status and betalergruppe object for number and sum of unsent fakturas.
+   * @param betalergruppe 
+   */
   sendAllFakturasInBGInParse(betalergruppe: Betalergruppe): void {
+    this.spinnertext = "Sender fakturaer"
     this.spinner.show();
     this.selectedFakturaer = [];
     let params = new Map();
@@ -312,26 +364,6 @@ export class ParsingComponent implements OnInit {
   }
 
   /**
-   * Converts between statusnames specified in @this.statuses and opcodes used in the database
-   */
-  // statusNameToOpcode(statusName : string) : number {
-  //   switch(statusName){
-  //     case "Usendte": {
-  //       return 10
-  //     }
-  //     case "Sendte": {
-  //       return 20
-  //     }
-  //     case "Slettede": {
-  //       return 30
-  //     }
-  //     default: {
-  //       return 10
-  //     }
-  //   }
-  // }
-
-  /**
    * Returns true if the date of the parsing is after the selected mindate, or no mindate has been selected,
    * and vica-versa with maxdate.
    */
@@ -342,40 +374,81 @@ export class ParsingComponent implements OnInit {
     return (isAfter && isBefore)
   }
 
-  getParsesNested(): void {
-    this.parsingService.getAll(true).subscribe(allParses => this.allParses = allParses)
-  }
+  // updateParsing(parsing: Parsing): void{
+  //   console.log(parsing);
+  //   this.parsingService.update(parsing, true).subscribe()
+  // }
 
+  // getParsesNested(): void {
+  //   this.parsingService.getAll(true).subscribe(allParses => this.allParses = allParses)
+  // }
+
+  /**
+   * Fetches all fakturas in a parsing.
+   * @param id The parsing ID
+   */
   getSingleParseNested(id: number): void {
-    // this.parsingService.get(id, true).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
-    // this.parsingService.get()
     let params = new Map();
     params.set('parsing', id);
-    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => this.selectedFakturaer = selectedFakturaer)
+    this.spinnertext = "Henter fakturaer"
+    this.spinner.show();
+    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => {
+      this.selectedFakturaer = selectedFakturaer;
+      this.spinner.hide()
+    })
   }
 
   // getSingleParse(id: number): void {
   //   this.parsingService.get(id, false).subscribe(selectedParsing => this.selectedParsing = selectedParsing)
   // }
 
+  /**
+   * Fetches all betalergrupper with their statistics (number/sum of fakturas, sent/unsent) relating to the specifik parsing.
+   * @param id The parsing ID
+   */
   getBetalergrupper(id: number): void {
     let params = new Map();
     params.set('parsing', id);
-    this.betalergruppeService.getAll(false, false, params).subscribe(selectedBetalergrupper => this.selectedBetalergrupper = selectedBetalergrupper)
+    this.spinnertext = "Henter betalergrupper"
+    this.spinner.show();
+    this.betalergruppeService.getAll(false, false, params).subscribe(selectedBetalergrupper => {
+      this.selectedBetalergrupper = selectedBetalergrupper;
+      this.spinner.hide()
+    })
   }
 
+  /**
+   * Fetches all fakturas belonging to the specified betalergruppe within the currently selected parsing (this.selectedParsing).
+   * @param id The betalergruppe ID
+   */
   getFaktsInBetgInParse(id: number): void {
     let params = new Map();
     params.set('parsing', this.selectedParsing.id);
     params.set('betalergruppe', id);
-    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => this.selectedFakturaer = selectedFakturaer)
+    this.spinnertext = "Henter fakturaer"
+    this.spinner.show();
+    this.fakturaService.getAll(true, false, params).subscribe(selectedFakturaer => {
+      this.selectedFakturaer = selectedFakturaer;
+      this.spinner.hide();
+    })
   }
 
-
+  /**
+   * Fetches all parsings
+   */
   getParses(): void {
-    this.parsingService.getAll(false).subscribe(allParses => this.allParses = allParses)
+    this.spinnertext = "Henter kørsler"
+    this.spinner.show();
+    this.parsingService.getAll(false).subscribe(allParses => {
+      this.allParses = allParses;
+      this.spinner.hide()
+    })
   }
 
+  /**
+   * For debugging purposes. Console logs the thing.
+   * @param thing 
+   */
   noop(thing: any): void {
     console.log(thing)
   }
@@ -394,7 +467,7 @@ export class ParsingComponent implements OnInit {
   //   this.testtext = String(thisdate)
   // }
 
-  testtext = "init"
+  // testtext = "init"
 
   /**
    * Downloads the file attached to the faktura object from the database
@@ -404,7 +477,7 @@ export class ParsingComponent implements OnInit {
     let popup = window.open('', '_blank');
 
     let path = parse.mangel_liste_fil
-    this.testtext = path
+    // this.testtext = path
     this.downloadService.download(path).
       subscribe(file => {
         var url = window.URL.createObjectURL(file);
@@ -413,7 +486,8 @@ export class ParsingComponent implements OnInit {
         popup.onblur = function () { popup.close() };
       },
         (error: AppError) => {
-          console.log("Error getting file", error)
+          console.log("Error getting file", error);
+          this.toasterService.pop('failure', 'Noget gik galt med download af filen.');
         }
       );
   }
@@ -437,7 +511,7 @@ export class ParsingComponent implements OnInit {
     this.view = "betGrpInParse"
   }
 
-  onSelectParsesInBetalergruppe(betalergruppe: Betalergruppe): void {
+  onSelectFaktsInBetalergruppe(betalergruppe: Betalergruppe): void {
     this.selectedFakturaer = [];
     this.getFaktsInBetgInParse(betalergruppe.id);
     this.selectedBetalergruppe = betalergruppe;
@@ -446,22 +520,4 @@ export class ParsingComponent implements OnInit {
   }
 
 
-  // onSelect(parsing: Parsing = this.selectedParsing): void {
-  // this.selectedParsingId = parsing.id)
-  // this.getSingleParseNested(parsing.id);
-  // this.selectedParsing = parsing;
-  // this.selectedFakturaer = parsing.fakturaer.filter((x: Faktura): boolean => { return x.status == (this.status as number); })
-  // delete this.selectedFaktura;
-  // delete this.selectedAnalyser
-  // this.selectedFaktura = undefined;
-  // this.selectedAnalyser = [] //!!!!!!
-  // }
-
-  // Denne bruges ikke atm
-  // selectedFaktura?: Faktura;
-  // onSelectF(faktura: Faktura): void {
-  //   this.selectedFaktura = faktura;
-  //   this.selectedAnalyser = faktura.analyser
-
-  // }
 }

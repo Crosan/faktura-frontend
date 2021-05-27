@@ -1,0 +1,39 @@
+<div mat-dialog-title>
+  <h3>{{ rekvirentName }}</h3>
+</div>
+
+<div mat-dialog-content>
+  <!-- <mat-form-field appearance="fill">
+    <mat-label>Select an option</mat-label>
+    <mat-select [(value)]="selected">
+      <div *ngFor="let bg of betalergrupper">
+        <mat-option value={{bg.id}}>{{bg.navn}}</mat-option>
+      </div>
+    </mat-select>
+  </mat-form-field> -->
+  <div class="d-flex w-100 justify-content-between">
+    <label>
+      {{ analyser }} analyser
+    </label>
+    <label>
+      {{ cpr_numre }} unikke CPR-numre
+    </label>
+  </div>
+  <b>Analysetyper:</b>
+  <div *ngFor="let type of analysetyper" class="d-flex w-100 justify-content-between">
+    <label>
+      {{ type.ydelses_navn }} ({{ type.ydelses_kode }})
+    </label>
+    <label>
+      {{ type.antal }} stk
+    </label> 
+ 
+  </div>
+ 
+</div>
+
+<div mat-dialog-actions align="end">
+  <!-- <button mat-raised-button (click)="annuller()">Luk</button> -->
+  <!-- <button class="mat-raised-button mat-primary" (click)="ok()">Gem</button> -->
+  <!-- </mat-dialog-actions> -->
+</div>
